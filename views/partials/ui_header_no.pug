@@ -9,9 +9,10 @@
           a.item(href='/login') Login
           a.item(href='/signup') Create Account
         else
+          if user.isAdmin
+            a.item(href='/admin') Admin Mode
           a.item.newpost
             i.big.write.square.icon
-          a.item(href='/admin') Admin Mode
           a.item(href='/notifications') 
             i.big.alarm.icon
           .ui.simple.dropdown.item

@@ -252,15 +252,11 @@ app.get('/', passportConfig.isAuthenticated, scriptController.getScript);
 function isAdminAuthenticated(req, res, next) {
   if (req.user.isAdmin)
   {
-    res.render('admin', {
-      title: "Admin View"
-    });
-    //return next();
+    return next();
   }
   else 
   {
-    // Add some pop up to show an error message, alert is not defined?
-    //alert("Not admin authenticated!");
+    req.flash('errors', { msg: 'Error: You are not admin authenticated' });
     res.redirect('/');
   }
 }
@@ -270,7 +266,11 @@ var admin_middleware = function(req, res, next) {
 } */
 // admin auth 
 // make admin script?
-app.use('/admin', isAdminAuthenticated, scriptController.getScriptFeed);
+app.use('/admin', isAdminAuthenticated, function (req, res) {
+  res.render('admin', {
+    title: 'Admin on'
+  });
+})
 
 app.get('/newsfeed/:caseId', scriptController.getScriptFeed);
 
