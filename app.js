@@ -248,6 +248,30 @@ app.use('/profile_pictures',express.static(path.join(__dirname, 'profile_picture
  */
 app.get('/', passportConfig.isAuthenticated, scriptController.getScript);
 
+/* Middleware function */
+function isAdminAuthenticated(req, res, next) {
+  if (req.user.isAdmin)
+  {
+    res.render('admin', {
+      title: "Admin View"
+    });
+    //return next();
+  }
+  else 
+  {
+    // Add some pop up to show an error message, alert is not defined?
+    //alert("Not admin authenticated!");
+    res.redirect('/');
+  }
+}
+/*
+var admin_middleware = function(req, res, next) {
+  if 
+} */
+// admin auth 
+// make admin script?
+app.use('/admin', isAdminAuthenticated, scriptController.getScriptFeed);
+
 app.get('/newsfeed/:caseId', scriptController.getScriptFeed);
 
 app.post('/post/new', userpostupload.single('picinput'), check, csrf, scriptController.newPost);
