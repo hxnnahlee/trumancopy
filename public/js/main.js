@@ -178,6 +178,113 @@ $('.right.floated.time.meta, .date').each(function() {
     window.location.href='/account';
   });
 
+  
+  // This will make captions editable
+  $('.ui.black.button.adminCap')
+  .on('click', function() {
+    //var text = $(this).siblings( ".ui.black.button.admin").val();
+    var card = $(this).parents( ".ui.fluid.card" );
+    var txt = card.find( ".description");
+    console.log("txt");
+    console.log(card);
+    console.log(card.find(".ui.black.button.adminCap"));
+    var currentButton = card.find(".ui.black.button.adminCap");
+    console.log(currentButton);
+    currentButton[0].style.display = "none";
+    var oldTxt = txt[0].innerHTML;
+    txt[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+oldTxt+'"><br>';
+    txt.append('<input type="submit" value="Submit">');
+    txt.append('<input type="button" id="cancel" value="Cancel">');
+
+    document.getElementById("cancel").on('click', function() {
+      currentButton[0].style.display = "initial";
+    })
+
+
+
+  })
+  
+
+
+
+  // This will make captions editable
+    $('.ui.black.button.adminLike')
+    .on('click', function() {
+      //var text = $(this).siblings( ".ui.black.button.admin").val();
+      var card = $(this).parents( ".ui.fluid.card" );
+      var txt = card.find( ".ui.basic.red.left.pointing.label.count");
+      console.log("txt");
+      console.log(card);
+      var currentButton = card.find(".ui.black.button.adminLike");
+      currentButton[0].style.display = "none";
+      var oldTxt = txt[0].innerHTML;
+      txt[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+oldTxt+'"><br>';
+      txt.append('<input type="submit" value="Submit">');
+  
+  
+    }) 
+
+  // This will make comments editable
+  $('.ui.black.button.adminComm')
+  .on('click', function() {
+    //var text = $(this).siblings( ".ui.black.button.admin").val();
+    var card = $(this).parents( ".ui.fluid.card" );
+    var txt = card.find( ".text");
+    var currentButton = card.find(".ui.black.button.adminComm");
+    currentButton[0].style.display = "none";
+    console.log(card.find(".text"));
+    //console.log(txt[0].innerHTML);
+    var oldTxt = txt[0].innerHTML;
+    txt[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+oldTxt+'"><br>';
+    txt.append('<input type="submit" value="Submit">');
+
+  }) 
+
+    // This will make captions editable
+    $('.ui.black.button.adminEditPost')
+    .on('click', function() {
+      //var text = $(this).siblings( ".ui.black.button.admin").val();
+      var card = $(this).parents( ".ui.fluid.card" );
+      var txt = card.find( ".description");
+      console.log("txt");
+      console.log(card);
+      var adminCap = card.find(".ui.black.button.adminCap");
+      var adminButton = card.find(".ui.black.button.adminEditPost");
+      if (adminButton[0])
+      {
+        adminButton[0].style.display = "none";
+      }
+      if (adminCap[0]) 
+      {
+        adminCap[0].style.display = "none";
+      }
+      var oldTxt = txt[0].innerHTML;
+      txt[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+oldTxt+'"><br>';
+      txt.append('<input type="submit" value="Submit">');
+
+      var likes = card.find( ".ui.basic.red.left.pointing.label.count");
+      var like = card.find(".ui.black.button.adminLike");
+
+      if (like[0])
+      {
+        like[0].style.display = "none";
+      }
+      var oldTxt = likes[0].innerHTML;
+      likes[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+oldTxt+'"><br>';
+      likes.append('<input type="submit" value="Submit">');
+      var commButton = card.find(".ui.black.button.adminComm")
+      var comm = card.find( ".text");
+      var old = comm[0].innerHTML;
+
+      if (commButton[0])
+      {
+        commButton[0].style.display = "none";
+      }
+      comm[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+old+'"><br>';
+      comm.append('<input type="submit" value="Submit">');
+  
+  
+    })
 
 ////////////////////
 $("input.newcomment").keyup(function(event) {

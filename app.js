@@ -248,7 +248,7 @@ app.use('/profile_pictures',express.static(path.join(__dirname, 'profile_picture
  */
 app.get('/', passportConfig.isAuthenticated, scriptController.getScript);
 
-/* Middleware function */
+/* Middleware function for Admin Authentication */
 function isAdminAuthenticated(req, res, next) {
   if (req.user.isAdmin)
   {
@@ -260,15 +260,10 @@ function isAdminAuthenticated(req, res, next) {
     res.redirect('/');
   }
 }
-/*
-var admin_middleware = function(req, res, next) {
-  if 
-} */
-// admin auth 
-// make admin script?
+
 app.use('/admin', isAdminAuthenticated, function (req, res) {
-  res.render('admin', {
-    title: 'Admin on'
+  res.render('test', {
+    title: 'Admin Mode'
   });
 })
 

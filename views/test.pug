@@ -54,6 +54,7 @@ block content
           //- Normal Base Post
           .content
             .right.floated.time.meta= "2 Days Ago"
+
             //-.right.floated.time.meta= (user.createdAt.getTime() + val.time)
             |  
             a.mod_pro_name_link(href='/user/NoahM1121')
@@ -84,6 +85,9 @@ block content
       .content
         .right.floated.meta= "Yesterday"
         |
+
+        .ui.black.button.adminEditPost
+          | Edit Post
         a(href='/user/bblueberryy')
           img.ui.avatar.image(src='/profile_pictures/image-31.png')
           span='Cassie Reed'
@@ -91,9 +95,14 @@ block content
         img.post(src="/post_pictures/"+"IMG_20170129_131732.jpg")
       .content
         .description="taking a break from #pastaweek for some crab rangoons... made with leftover pasta dough!! :D "
+
+        button.ui.black.button.adminCap
+          | Edit Caption
         //-.right.floated.meta
           i.icon.checkmark
           | Seen by 12
+
+      
       .three.ui.bottom.attached.icon.buttons
         .ui.reply.button(tabindex='0')
           i.reply.icon
@@ -106,6 +115,7 @@ block content
             i.heart.icon
             |  Like
           a.ui.basic.red.left.pointing.label.count=2
+          button.ui.black.button.adminLike Edit Likes
       
       .content
         .ui.comments
@@ -120,6 +130,7 @@ block content
                 |  0 Likes
               .text
                 | when will you get it into your head that nobody likes your stupid ass.
+              button.ui.black.button.adminComm Edit Comment
               .actions
                 a.reply Reply
                 a.like Like
@@ -146,6 +157,8 @@ block content
 
     .ui.fluid.card(postID="2")
       .content
+        .ui.black.button.adminEditPost
+          | Edit Post
         .right.floated.meta= "Yesterday"
         |
         a(href='/user/NoahM1121')
@@ -155,6 +168,8 @@ block content
         img.post(src="/post_pictures/"+"IMG_20170602_173837.jpg")
       .content
         .description="Today was a rough day, but I have food to cheer me up."
+        button.ui.black.button.adminCap
+          | Edit Caption
         //-.right.floated.meta
           i.icon.checkmark
           | Seen by 12
@@ -170,6 +185,7 @@ block content
             i.heart.icon
             |  Like
           a.ui.basic.red.left.pointing.label.count=4
+          button.ui.black.button.adminLike Edit Likes
       .content
         //-.description(style="text-align:center;background:#E8E8E8")="How is Aimee Feeling?"
         //-.ui.top.attached.label(style="text-align:center")="How is Noah Feeling"
