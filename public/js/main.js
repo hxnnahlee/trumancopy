@@ -178,113 +178,125 @@ $('.right.floated.time.meta, .date').each(function() {
     window.location.href='/account';
   });
 
-  
-  // This will make captions editable
-  $('.ui.black.button.adminCap')
-  .on('click', function() {
-    //var text = $(this).siblings( ".ui.black.button.admin").val();
-    var card = $(this).parents( ".ui.fluid.card" );
-    var txt = card.find( ".description");
-    console.log("txt");
-    console.log(card);
-    console.log(card.find(".ui.black.button.adminCap"));
-    var currentButton = card.find(".ui.black.button.adminCap");
-    console.log(currentButton);
-    currentButton[0].style.display = "none";
-    var oldTxt = txt[0].innerHTML;
-    txt[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+oldTxt+'"><br>';
-    txt.append('<input type="submit" value="Submit">');
-    txt.append('<input type="button" id="cancel" value="Cancel">');
-
-    document.getElementById("cancel").on('click', function() {
-      currentButton[0].style.display = "initial";
-    })
-
-
-
-  })
-  
-
-
-
-  // This will make captions editable
-    $('.ui.black.button.adminLike')
-    .on('click', function() {
-      //var text = $(this).siblings( ".ui.black.button.admin").val();
-      var card = $(this).parents( ".ui.fluid.card" );
-      var txt = card.find( ".ui.basic.red.left.pointing.label.count");
-      console.log("txt");
-      console.log(card);
-      var currentButton = card.find(".ui.black.button.adminLike");
-      currentButton[0].style.display = "none";
-      var oldTxt = txt[0].innerHTML;
-      txt[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+oldTxt+'"><br>';
-      txt.append('<input type="submit" value="Submit">');
-  
-  
-    }) 
-
-  // This will make comments editable
-  $('.ui.black.button.adminComm')
-  .on('click', function() {
-    //var text = $(this).siblings( ".ui.black.button.admin").val();
-    var card = $(this).parents( ".ui.fluid.card" );
-    var txt = card.find( ".text");
-    var currentButton = card.find(".ui.black.button.adminComm");
-    currentButton[0].style.display = "none";
-    console.log(card.find(".text"));
-    //console.log(txt[0].innerHTML);
-    var oldTxt = txt[0].innerHTML;
-    txt[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+oldTxt+'"><br>';
-    txt.append('<input type="submit" value="Submit">');
-
-  }) 
-
-    // This will make captions editable
+    // This will make captions editable on the test page
     $('.ui.black.button.adminEditPost')
     .on('click', function() {
-      //var text = $(this).siblings( ".ui.black.button.admin").val();
       var card = $(this).parents( ".ui.fluid.card" );
       var txt = card.find( ".description");
+      var pic = card.find(".post");
+      console.log(pic);
       console.log("txt");
       console.log(card);
-      var adminCap = card.find(".ui.black.button.adminCap");
       var adminButton = card.find(".ui.black.button.adminEditPost");
       if (adminButton[0])
       {
         adminButton[0].style.display = "none";
       }
-      if (adminCap[0]) 
-      {
-        adminCap[0].style.display = "none";
-      }
-      var oldTxt = txt[0].innerHTML;
-      txt[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+oldTxt+'"><br>';
-      txt.append('<input type="submit" value="Submit">');
+      txt[0].setAttribute("contenteditable", "true");
 
       var likes = card.find( ".ui.basic.red.left.pointing.label.count");
-      var like = card.find(".ui.black.button.adminLike");
+      likes[0].setAttribute("contenteditable", "true");
 
-      if (like[0])
-      {
-        like[0].style.display = "none";
-      }
-      var oldTxt = likes[0].innerHTML;
-      likes[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+oldTxt+'"><br>';
-      likes.append('<input type="submit" value="Submit">');
-      var commButton = card.find(".ui.black.button.adminComm")
-      var comm = card.find( ".text");
-      var old = comm[0].innerHTML;
 
-      if (commButton[0])
-      {
-        commButton[0].style.display = "none";
-      }
-      comm[0].innerHTML = '<form> Edit:<br><input type="text" name="edited" value="'+old+'"><br>';
-      comm.append('<input type="submit" value="Submit">');
-  
+      var comm = card.find(".text");      
+      comm[0].setAttribute("contenteditable", "true");
   
     })
+
+  $('a.item.adminToggle')
+  .on('click', function() {
+
+      
+      var captions = document.getElementsByClassName("description")
+      console.log(captions[0])
+      // Tells user whether they are activating/deactivating admin mode
+      if (captions[0].getAttribute("contenteditable") == "true")
+      {
+        alert("Admin Mode Off");
+
+      }
+      else {
+        alert("Admin Mode On");
+      }
+
+      // Make captions editable
+      for (var i=0; i<captions.length; i++)
+      {
+        if (captions[i].getAttribute("contenteditable") == "true")
+        { 
+          captions[i].setAttribute("contenteditable", "false");
+        }
+        else {
+          captions[i].setAttribute("contenteditable", "true");
+        }
+      }
+
+      // Make number of likes editable
+      var likes = document.getElementsByClassName("left pointing label count")
+      for (var i=0; i<likes.length; i++)
+      {
+        if (likes[i].getAttribute("contenteditable") == "true")
+        { 
+          likes[i].setAttribute("contenteditable", "false");
+        }
+        else likes[i].setAttribute("contenteditable", "true")
+      }
+
+      // Make comments editable
+      var comments = document.getElementsByClassName("text")
+      for (var i=0; i<comments.length; i++)
+      {
+        if (comments[i].getAttribute("contenteditable") == "true")
+        { 
+          comments[i].setAttribute("contenteditable", "false")
+        }
+        else comments[i].setAttribute("contenteditable", "true")
+      }
+
+      // Make number of comment likes editable
+      var commlikes = document.getElementsByClassName("num")
+      for (var i=0; i<likes.length; i++)
+      {
+        if (commlikes[i].getAttribute("contenteditable") == "true")
+        { 
+          commlikes[i].setAttribute("contenteditable", "false")
+        }
+        else commlikes[i].setAttribute("contenteditable", "true")
+      }
+
+      // Make time editable
+      var time = document.getElementsByClassName("right floated time meta")
+      for (var i=0; i<time.length; i++)
+      {
+        if (time[i].getAttribute("contenteditable") == "true")
+        { 
+          time[i].setAttribute("contenteditable", "false");
+        }
+        else time[i].setAttribute("contenteditable", "true")
+      }
+      var profPics = document.getElementsByClassName("ui avatar image");
+      for (var i=0; i<profPics.length; i++)
+      {
+        profPics[i].removeAttribute("href")
+      }
+
+  })
+
+  // Click image to replace with a new one (admin functionality)
+  $("img.lazyload").click(function() {
+    
+    var captions = document.getElementsByClassName("description")
+    if (captions[0].getAttribute("contenteditable")=="true")
+    {
+      $(' .ui.tiny.post.modal').modal('show'); 
+    }
+  })
+
+  // Change who posted the image (admin functionality)
+  $("a.ui.avatar.image").click(function() {
+    console.log("hello")
+  })
+
 
 ////////////////////
 $("input.newcomment").keyup(function(event) {
@@ -294,6 +306,8 @@ $("input.newcomment").keyup(function(event) {
         $(this).siblings( "i.big.send.link.icon").click();
     }
 });
+
+
 
 //create a new Comment
 $("i.big.send.link.icon").click(function() {

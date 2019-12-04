@@ -96,7 +96,7 @@ block content
       .content
         .description="taking a break from #pastaweek for some crab rangoons... made with leftover pasta dough!! :D "
 
-        button.ui.black.button.adminCap
+        button.ui.black.button.adminCap(display="none")
           | Edit Caption
         //-.right.floated.meta
           i.icon.checkmark
@@ -115,7 +115,7 @@ block content
             i.heart.icon
             |  Like
           a.ui.basic.red.left.pointing.label.count=2
-          button.ui.black.button.adminLike Edit Likes
+          button.ui.black.button.adminLike(display="none") Edit Likes
       
       .content
         .ui.comments
@@ -130,7 +130,7 @@ block content
                 |  0 Likes
               .text
                 | when will you get it into your head that nobody likes your stupid ass.
-              button.ui.black.button.adminComm Edit Comment
+              button.ui.black.button.adminComm(display=none) Edit Comment
               .actions
                 a.reply Reply
                 a.like Like
