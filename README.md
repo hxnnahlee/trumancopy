@@ -3,20 +3,20 @@
 Admin Mode Feature
 =======================
 
-This feature we are implementing allows for Admins to be able to edit any post, giving researchers the option to directly manipulate the actors/scripts via the Truman UI itself. 
+This feature we are implementing allows for admins to be able to edit any post, giving researchers the option to directly manipulate the actors/scripts via the Truman UI. 
 
-The result is the option for a user deemed as Admin to be able to toggle Admin Mode on/off.
+The result is the option for a user set as an admin to be able to toggle Admin Mode on/off. The button to toggle this mode will only appear for users who are set as admins.
 
-We started this process by playing around with a test page to see what would be the best way to make posts editable. We settled on using Semantic-UI's "contenteditable" feature as it appears clean and intuitive to use. 
+We started this process by playing around with a test page to see what would be the best way to make posts editable. Initially, we had buttons for each component of the post that would change that component to an HTML form. This looked a bit clunky, so we settled on using Semantic-UI's "contenteditable" feature as it appears clean and intuitive to use. 
 
-When a user turns Admin Mode "on", a pop-up appears notifying the user of this switch. The captions, comments, like amounts, and photos of each post on the timeline can be edited when this mode is enabled. 
+When a user turns Admin Mode "on", a pop-up appears notifying the user of this switch. The captions, comments, like amounts, and photos of each post on the timeline can be edited when this mode is enabled. There shall be a button on each post that the admin can click to save their changes. (The backend functionality of this must be implemented).
 
 Future Developments
 =======================
 
-This semester we focused on the front-end component of the Admin feature. in the future, a backend component to this feature must be developed. This would include:
+This semester we focused on the front-end component of the Admin feature. In the future, a backend component must be developed. This would include:
 
-* Saving the updated posts to the database
+* Saving the changes of the posts to the database
 * The option to export the contents of the database as a CSV
 
 
