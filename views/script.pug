@@ -50,6 +50,8 @@ block content
           
           //- This is a User made post
           .content
+            .ui.black.button.adminEditPost(display="none")
+              | Save Changes
             .right.floated.time.meta= (user.createdAt.getTime() + val.relativeTime)
             |  
             a.ui.avatar.image(href='/me')

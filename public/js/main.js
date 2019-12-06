@@ -206,16 +206,22 @@ $('.right.floated.time.meta, .date').each(function() {
   $('a.item.adminToggle')
   .on('click', function() {
 
-      
+      // This should be a button that the admin will press to save the changes they've made on the post
+      var buttons = document.getElementsByClassName("adminEditPost");
+      for (var i = 0; i<buttons.length; i++)
+      {
+        buttons[i].style.display = "initial"
+      }
+
+
       var captions = document.getElementsByClassName("description")
-      console.log(captions[0])
       // Tells user whether they are activating/deactivating admin mode
       if (captions[0].getAttribute("contenteditable") == "true")
       {
         alert("Admin Mode Off");
-
       }
       else {
+        
         alert("Admin Mode On");
       }
 
@@ -255,7 +261,7 @@ $('.right.floated.time.meta, .date').each(function() {
 
       // Make number of comment likes editable
       var commlikes = document.getElementsByClassName("num")
-      for (var i=0; i<likes.length; i++)
+      for (var i=0; i<commlikes.length; i++)
       {
         if (commlikes[i].getAttribute("contenteditable") == "true")
         { 

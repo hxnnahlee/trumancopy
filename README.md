@@ -1,3 +1,25 @@
+## Fall 2019 Semester Progress
+
+Admin Mode Feature
+=======================
+
+This feature we are implementing allows for Admins to be able to edit any post, giving researchers the option to directly manipulate the actors/scripts via the Truman UI itself. 
+
+The result is the option for a user deemed as Admin to be able to toggle Admin Mode on/off.
+
+We started this process by playing around with a test page to see what would be the best way to make posts editable. We settled on using Semantic-UI's "contenteditable" feature as it appears clean and intuitive to use. 
+
+When a user turns Admin Mode "on", a pop-up appears notifying the user of this switch. The captions, comments, like amounts, and photos of each post on the timeline can be edited when this mode is enabled. 
+
+Future Developments
+=======================
+
+This semester we focused on the front-end component of the Admin feature. in the future, a backend component to this feature must be developed. This would include:
+
+* Saving the updated posts to the database
+* The option to export the contents of the database as a CSV
+
+
 Truman Platform 
 =======================
 
