@@ -50,8 +50,6 @@ block content
           
           //- This is a User made post
           .content
-            .ui.black.button.adminEditPost(display="none")
-              | Save Changes
             .right.floated.time.meta= (user.createdAt.getTime() + val.relativeTime)
             |  
             a.ui.avatar.image(href='/me')
@@ -179,7 +177,10 @@ block content
             img.lazyload(data-src=cdn+"/post_pictures/"+val.picture, style="max-width:100%;width:100%;")
           .content
             .description=val.body
-          .three.ui.bottom.attached.icon.buttons
+          .four.ui.bottom.attached.icon.buttons
+            .ui.adminSave.button(tabindex='0', style='display: none;')
+              i.edit.icon
+              | Save
             .ui.reply.button(tabindex='0')
               i.reply.icon
               |  Reply
