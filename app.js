@@ -65,6 +65,7 @@ const scriptController = require('./controllers/script');
 const homeController = require('./controllers/home');
 const userController = require('./controllers/user');
 const notificationController = require('./controllers/notification');
+const adminController = require('./controllers/admin');
 
 /**
  * API keys and Passport configuration.
@@ -341,6 +342,8 @@ app.get('/feed', passportConfig.isAuthenticated, scriptController.getScript);
 app.post('/feed', passportConfig.isAuthenticated, scriptController.postUpdateFeedAction);
 app.post('/pro_feed', passportConfig.isAuthenticated, scriptController.postUpdateProFeedAction);
 app.post('/userPost_feed', passportConfig.isAuthenticated, scriptController.postUpdateUserPostFeedAction);
+
+app.post('/update_post_admin', passportConfig.isAuthenticated, adminController.updatePostAdmin);
 
 /**
  * Error Handler.

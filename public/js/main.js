@@ -178,41 +178,19 @@ $('.right.floated.time.meta, .date').each(function() {
     window.location.href='/account';
   });
 
-  // This will make captions editable on the test page
-  $('.ui.black.button.adminEditPost')
-  .on('click', function() {
-    var card = $(this).parents( ".ui.fluid.card" );
-    var txt = card.find( ".description");
-    var pic = card.find(".post");
-    console.log(pic);
-    console.log("txt");
-    console.log(card);
-    var adminButton = card.find(".ui.black.button.adminEditPost");
-    if (adminButton[0])
-    {
-      adminButton[0].style.display = "none";
-    }
-    txt[0].setAttribute("contenteditable", "true");
-
-    var likes = card.find( ".ui.basic.red.left.pointing.label.count");
-    likes[0].setAttribute("contenteditable", "true");
-
-
-    var comm = card.find(".text");      
-    comm[0].setAttribute("contenteditable", "true");
-
-  })
-
   // This will save the changes on the card that 'save' is clicked on
   $('.ui.adminSave.button')
   .on('click', function() {
 
-    var caption = $(this).parents( ".four.ui.bottom.attached.icon.buttons" ).siblings( ".content" ).children( ".description" )[0];
-    console.log(caption.innerHTML);
+    var caption = $(this).parents( ".four.ui.bottom.attached.icon.buttons" ).siblings( ".content" ).children( ".description" )[0].innerHTML;
+    var card = $(this).parents( ".ui.fluid.card" );
+    var likes = card.find( ".ui.basic.red.left.pointing.label.count")[0].innerHTML;
 
-    // Fix this
-    $.post( "/update_post_admin", { postID: postID, new_comment: date, comment_text: text, _csrf : $('meta[name="csrf-token"]').attr('content') } );
-    
+    console.log(likes);
+    var pID = card.attr( "postID" );
+    $.post( "/update_post_admin", {  postID: pID, updated_caption: caption, updated_likes: likes, _csrf : $('meta[name="csrf-token"]').attr('content') } );
+
+
   })
 
   // This will turn admin mode on and off
@@ -220,20 +198,29 @@ $('.right.floated.time.meta, .date').each(function() {
   .on('click', function() {
 
       var captions = document.getElementsByClassName("description")
+      var buttons = document.getElementsByClassName("adminSave");
+
 
       // Tells user whether they are activating/deactivating admin mode
       // Turning admin mode off will save all changes made
       if (captions[0].getAttribute("contenteditable") == "true")
       {
         alert("Admin Mode Off");
+
+        // Hide the 'save' button
+        for (var i = 0; i<buttons.length; i++)
+        {
+          buttons[i].style.display = "none"
+        } 
         for (var i=0; i<captions.length; i++)
         {
           captions[i].setAttribute("contenteditable", "false");
         }
       }
       else {        
-        alert("Admin Mode On");
-        var buttons = document.getElementsByClassName("adminSave");
+        alert("Admin Mode On: Click directly on the parts of the post that you would like to edit. Click 'save' next to the reply button to save your changes");
+
+        // Display the 'save' button
         for (var i = 0; i<buttons.length; i++)
         {
           buttons[i].style.display = "initial"
