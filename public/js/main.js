@@ -40,8 +40,11 @@ $(window).on("load", function() {
 
   $(' .ui.tiny.post.modal').modal({
       observeChanges  : true
-    })
-  ;
+    });
+
+  $('.ui.tiny.update.modal').modal({
+    observeChanges : true
+  });
 
   //get add new feed post modal to work
   $("#newpost, a.item.newpost").click(function () {
@@ -90,6 +93,37 @@ $(window).on("load", function() {
         //return true;
         });
 
+//update photo
+    $('.ui.update.form')
+    .form({
+      on: 'blur',
+      fields: {
+        newpic: {
+          identifier  : 'newpic',
+          rules: [
+            {
+              type: 'notExactly[/public/photo-camera.svg]',
+              prompt : 'Please click on Camera Icon to add a photo'
+            }
+          ]
+        }
+      },
+  
+      onSuccess:function(event, fields){
+        console.log("THE ONSUCCESS FOR ADMIN");
+        console.log($(".ui.update.form")[0])
+        $(".ui.update.form")[0].submit();
+      }
+  
+    });
+  
+    $('.ui.update.form').submit(function(e) {
+          e.preventDefault();
+          console.log("Submit ")
+          //$('.ui.tiny.nudge.modal').modal('show'); 
+          //return true;
+          });
+
 
 //Picture Preview on Image Selection
 function readURL(input) {
@@ -104,11 +138,31 @@ function readURL(input) {
             reader.readAsDataURL(input.files[0]);
         }
     }
+
+  //Picture Preview on Image Selection for admin
+  function readURLAdmin(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#imgInpAdmin').attr('src', e.target.result);
+            //console.log("FILE is "+ e.target.result);
+        }
+        
+        reader.readAsDataURL(input.files[0]);
+    }
+  }
     
-    $("#picinput").change(function(){
-        //console.log("@@@@@ changing a photo");
-        readURL(this);
-    });
+  $("#picinput").change(function(){
+      //console.log("@@@@@ changing a photo");
+      readURL(this);
+  });
+
+  $("#newpic").change(function(){
+    console.log("updating photo ..");
+    readURLAdmin(this);
+  });
+
+$(".actor.ui.selection.dropdown").dropdown();
 
 //Modal to show "other users" in Notifications 
 /*
@@ -186,11 +240,36 @@ $('.right.floated.time.meta, .date').each(function() {
     var card = $(this).parents( ".ui.fluid.card" );
     var likes = card.find( ".ui.basic.red.left.pointing.label.count")[0].innerHTML;
 
-    console.log(likes);
+    var comments = $(this).parents(".four.ui.bottom.attached.icon.buttons" ).siblings( ".content" ).children(".ui.comments").children(".comment")
+    console.log(comments[0]);
+    var commentsArray = [];
+    for (var i = 0; i<comments.length; i++)
+    {
+
+      commentsArray.push(comments[i].getAttribute("commentid"))
+      commentsArray.push(comments[i].children[1].children[2].innerText);
+      console.log(comments[i].getAttribute("commentid"));
+      console.log(comments[i].children[1].children[2].innerText);
+    }
+
+
+
+
+    var actor = card.find(".actor.ui.selection.dropdown")[0].innerText;
+    console.log(actor);
+
     var pID = card.attr( "postID" );
-    $.post( "/update_post_admin", {  postID: pID, updated_caption: caption, updated_likes: likes, _csrf : $('meta[name="csrf-token"]').attr('content') } );
+    $.post( "/update_post_admin", {  actorName: actor, postID: pID, updated_caption: caption, updated_likes: likes, _csrf : $('meta[name="csrf-token"]').attr('content') } );
 
+    $.post( "/update_comments", { postID: pID, saveComments: commentsArray,  _csrf : $('meta[name="csrf-token"]').attr('content') });
 
+  })
+
+  // This will export database contents to a CSV
+  $('a.item.adminExport')
+  .on('click', function(){ 
+    console.log("Implement exporting");
+    $.getScript('../../admin-export.js');
   })
 
   // This will turn admin mode on and off
@@ -199,6 +278,8 @@ $('.right.floated.time.meta, .date').each(function() {
 
       var captions = document.getElementsByClassName("description")
       var buttons = document.getElementsByClassName("adminSave");
+      var likes = document.getElementsByClassName("left pointing label count")
+
 
 
       // Tells user whether they are activating/deactivating admin mode
@@ -216,6 +297,10 @@ $('.right.floated.time.meta, .date').each(function() {
         {
           captions[i].setAttribute("contenteditable", "false");
         }
+        for (var i=0; i<likes.length; i++)
+        {
+          likes[i].setAttribute("contenteditable", "false");
+        }
       }
       else {        
         alert("Admin Mode On: Click directly on the parts of the post that you would like to edit. Click 'save' next to the reply button to save your changes");
@@ -229,17 +314,10 @@ $('.right.floated.time.meta, .date').each(function() {
         {
           captions[i].setAttribute("contenteditable", "true");
         }
-      }
-
-      // Make number of likes editable
-      var likes = document.getElementsByClassName("left pointing label count")
-      for (var i=0; i<likes.length; i++)
-      {
-        if (likes[i].getAttribute("contenteditable") == "true")
-        { 
-          likes[i].setAttribute("contenteditable", "false");
+        for (var i=0; i<likes.length; i++)
+        {
+          likes[i].setAttribute("contenteditable", "true");
         }
-        else likes[i].setAttribute("contenteditable", "true")
       }
 
       // Make comments editable
@@ -274,21 +352,16 @@ $('.right.floated.time.meta, .date').each(function() {
         }
         else time[i].setAttribute("contenteditable", "true")
       }
-      var profPics = document.getElementsByClassName("ui avatar image");
-      for (var i=0; i<profPics.length; i++)
-      {
-        profPics[i].removeAttribute("href")
-      }
 
   })
 
   // Click image to replace with a new one (admin functionality)
-  $("img.lazyload").click(function() {
+  $("img.lazyload.post").click(function() {
     
     var captions = document.getElementsByClassName("description")
     if (captions[0].getAttribute("contenteditable")=="true")
     {
-      $(' .ui.tiny.post.modal').modal('show'); 
+      $(' .ui.tiny.update.modal').modal('show'); 
     }
   })
 

@@ -165,16 +165,34 @@ block content
             //-a(href='/user/'+val.actor.username)
               img.ui.avatar.image(src=cdn+'/profile_pictures/'+val.actor.profile.picture)
               span=val.actor.profile.name
-            a(href='/user/'+val.actor.username)     
-              img.ui.avatar.image.lazyload(data-src=cdn+"/profile_pictures/"+val.actor.profile.picture)
-              span=val.actor.profile.name
+            if user.isAdmin
+              .actor.ui.selection.dropdown  
+                input(type='hidden', name='user')
+                i.dropdown.icon
+                .default.text
+                  a(href='/user/'+val.actor.username)
+                  img.ui.avatar.image.lazyload(data-src=cdn+"/profile_pictures/"+val.actor.profile.picture)
+                  span=val.actor.profile.name
+                .menu
+                  each person in script
+                    .item(data-value='1')
+                        img.ui.avatar.image.lazyload(data-src=cdn+"/profile_pictures/"+person.actor.profile.picture)
+                        span=person.actor.profile.name
+            else
+              a(href='/user/'+val.actor.username)
+                img.ui.avatar.image.lazyload(data-src=cdn+"/profile_pictures/"+val.actor.profile.picture)
+                span=val.actor.profile.name
+                //-.item(data-value='0')
+                  a(href='/user/NoahM1121')
+                    img.ui.avatar.image(src='/profile_pictures/image-7.png')
+                    span='Another User'
           //-div(style="position: relative; z-index: 1;")
             img(src="image.png" style="position: absolute; z-index: 2;")
             span#overlay_text(style="position: relative; top: -10px; z-index: 3;") OVERLAY
           .img.post
             //-img.post(src="/"+val.picture)
             //img(src='/public/picture.svg', data-src="/post_pictures/"+val.picture, style="max-width:100%;width:100%;")
-            img.lazyload(data-src=cdn+"/post_pictures/"+val.picture, style="max-width:100%;width:100%;")
+            img.lazyload.post(data-src=cdn+"/post_pictures/"+val.picture, style="max-width:100%;width:100%;")
           .content
             .description=val.body
           .four.ui.bottom.attached.icon.buttons
@@ -318,3 +336,19 @@ block content
           .ui.error.message
       .actions
         input.ui.green.button(type='submit', name="foo", value='Submit', form='postform')
+
+    .ui.tiny.update.modal()
+      i.close.icon
+      .header Change Post Photo
+      .content
+        form#updateform.ui.update.form(action='/update_post_photo', method='POST', enctype='multipart/form-data')
+          input(type='hidden', name='_csrf', value=_csrf)
+          .field.image-upload
+            label(for='newpic')
+              .image.content
+                img#imgInpAdmin.ui.fluid.image(src='/public/photo-camera.svg')
+            //-input#picinput(type='file', accept='image/*', capture='camera', name='picinput')
+            input#newpic(type='file', accept='image/*', name='newpic')
+          .ui.error.message
+      .actions
+        input.ui.green.button(type='submit', name="new", value='Submit', form='updateform')

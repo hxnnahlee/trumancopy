@@ -344,6 +344,8 @@ app.post('/pro_feed', passportConfig.isAuthenticated, scriptController.postUpdat
 app.post('/userPost_feed', passportConfig.isAuthenticated, scriptController.postUpdateUserPostFeedAction);
 
 app.post('/update_post_admin', passportConfig.isAuthenticated, adminController.updatePostAdmin);
+app.post('/update_post_photo', passportConfig.isAuthenticated, adminController.updatePostPhoto);
+app.post('/update_comments', passportConfig.isAuthenticated, adminController.updateCommentAdmin);
 
 /**
  * Error Handler.
