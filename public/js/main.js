@@ -10,7 +10,7 @@ $(window).on("load", function() {
   $('#loading').hide();
   $('#content').attr('style', 'block');
   $('#content').fadeIn('slow');
-  //close messages from flash message 
+  //close messages from flash message
   $('.message .close')
   .on('click', function() {
     $(this)
@@ -22,9 +22,9 @@ $(window).on("load", function() {
   //check bell
   if (!(top.location.pathname === '/login' || top.location.pathname === '/signup'))
   {
-      
+
     $.getJSON( "/bell", function( json ) {
-      
+
       if (json.result)
       {
         $("i.big.alarm.icon").replaceWith( '<i class="big icons"><i class="red alarm icon"></i><i class="corner yellow lightning icon"></i></i>' );
@@ -48,7 +48,7 @@ $(window).on("load", function() {
 
   //get add new feed post modal to work
   $("#newpost, a.item.newpost").click(function () {
-    $(' .ui.tiny.post.modal').modal('show'); 
+    $(' .ui.tiny.post.modal').modal('show');
 });
 
   //new post validator (picture and text can not be empty)
@@ -89,7 +89,7 @@ $(window).on("load", function() {
   $('.ui.feed.form').submit(function(e) {
         e.preventDefault();
         console.log("Submit the junks!!!!")
-        //$('.ui.tiny.nudge.modal').modal('show'); 
+        //$('.ui.tiny.nudge.modal').modal('show');
         //return true;
         });
 
@@ -108,19 +108,19 @@ $(window).on("load", function() {
           ]
         }
       },
-  
+
       onSuccess:function(event, fields){
         console.log("THE ONSUCCESS FOR ADMIN");
         console.log($(".ui.update.form")[0])
         $(".ui.update.form")[0].submit();
       }
-  
+
     });
-  
+
     $('.ui.update.form').submit(function(e) {
           e.preventDefault();
           console.log("Submit ")
-          //$('.ui.tiny.nudge.modal').modal('show'); 
+          //$('.ui.tiny.nudge.modal').modal('show');
           //return true;
           });
 
@@ -134,7 +134,7 @@ function readURL(input) {
                 $('#imgInp').attr('src', e.target.result);
                 //console.log("FILE is "+ e.target.result);
             }
-            
+
             reader.readAsDataURL(input.files[0]);
         }
     }
@@ -147,11 +147,11 @@ function readURL(input) {
             $('#imgInpAdmin').attr('src', e.target.result);
             //console.log("FILE is "+ e.target.result);
         }
-        
+
         reader.readAsDataURL(input.files[0]);
     }
   }
-    
+
   $("#picinput").change(function(){
       //console.log("@@@@@ changing a photo");
       readURL(this);
@@ -164,7 +164,7 @@ function readURL(input) {
 
 $(".actor.ui.selection.dropdown").dropdown();
 
-//Modal to show "other users" in Notifications 
+//Modal to show "other users" in Notifications
 /*
 $('a.others').click(function(){
   let key = $(this).attr('key');
@@ -176,18 +176,30 @@ $('a.others').click(function(){
       var lazyLoad = new LazyLoad({
          container: el /// <--- not sure if this works here, read below
     });
-      
-      
-      
+
+
+
     }
-  }).modal('show')  
+  }).modal('show')
 }); */
 
 //add humanized time to all posts
 $('.right.floated.time.meta, .date').each(function() {
     var ms = parseInt($(this).text(), 10);
     let time = new Date(ms);
-    $(this).text(humanized_time_span(time)); 
+    $(this).text(humanized_time_span(time));
+});
+
+//add time for admin in edit mode to all posts, in form days:hours:minutes
+$('.right.floated.admintime.meta, .admindate').each(function() {
+    var ms = parseInt($(this).text(), 10); //ms is the date (in ms) the post was created
+    ms = Date.now() - ms; //subtract to get how long ago post happened
+    var days = Math.floor(ms / 86400000);
+    ms = ms % 86400000;//ms remaining after removing days
+    var hours = Math.floor(ms / 3600000);
+    ms = ms % 3600000; //ms remaining after removings days and hours
+    var mins = Math.floor(ms / 60000);
+    $(this).text(days+":"+hours+":"+mins);
 });
 
   //Sign Up Button
@@ -239,6 +251,7 @@ $('.right.floated.time.meta, .date').each(function() {
     var caption = $(this).parents( ".four.ui.bottom.attached.icon.buttons" ).siblings( ".content" ).children( ".description" )[0].innerHTML;
     var card = $(this).parents( ".ui.fluid.card" );
     var likes = card.find( ".ui.basic.red.left.pointing.label.count")[0].innerHTML;
+    var time = card.find(".right.floated.admintime.meta")[0].innerHTML;//day:hr:min ago of post
 
     var comments = $(this).parents(".four.ui.bottom.attached.icon.buttons" ).siblings( ".content" ).children(".ui.comments").children(".comment")
     console.log(comments[0]);
@@ -247,9 +260,13 @@ $('.right.floated.time.meta, .date').each(function() {
     {
 
       commentsArray.push(comments[i].getAttribute("commentid"))
-      commentsArray.push(comments[i].children[1].children[2].innerText);
+      commentsArray.push(comments[i].children[1].children[3].innerText);//push body
+      commentsArray.push(comments[i].children[1].children[1].children[1].children[1].innerText);//push Likes
+      commentsArray.push(comments[i].children[1].children[1].children[0].innerText);//push date
       console.log(comments[i].getAttribute("commentid"));
-      console.log(comments[i].children[1].children[2].innerText);
+      console.log(comments[i].children[1].children[3].innerText);//body
+      console.log(comments[i].children[1].children[1].children[1].children[1].innerText); //num likes
+      console.log(comments[i].children[1].children[1].children[0].innerText); //date
     }
 
 
@@ -259,15 +276,16 @@ $('.right.floated.time.meta, .date').each(function() {
     console.log(actor);
 
     var pID = card.attr( "postID" );
-    $.post( "/update_post_admin", {  actorName: actor, postID: pID, updated_caption: caption, updated_likes: likes, _csrf : $('meta[name="csrf-token"]').attr('content') } );
-
-    $.post( "/update_comments", { postID: pID, saveComments: commentsArray,  _csrf : $('meta[name="csrf-token"]').attr('content') });
-
+    $.post( "/update_post_admin", {  updated_time: time, actorName: actor, postID: pID, updated_caption: caption, updated_likes: likes, _csrf : $('meta[name="csrf-token"]').attr('content') } );
+    if (comments.length > 0)
+    {
+      $.post( "/update_comments", { postID: pID, saveComments: commentsArray,  _csrf : $('meta[name="csrf-token"]').attr('content') });
+    }
   })
 
   // This will export database contents to a CSV
   $('a.item.adminExport')
-  .on('click', function(){ 
+  .on('click', function(){
     console.log("Implement exporting");
     $.getScript('../../admin-export.js');
   })
@@ -279,8 +297,10 @@ $('.right.floated.time.meta, .date').each(function() {
       var captions = document.getElementsByClassName("description")
       var buttons = document.getElementsByClassName("adminSave");
       var likes = document.getElementsByClassName("left pointing label count")
-
-
+      var admin_times = document.getElementsByClassName("right floated admintime meta")
+      var norm_times = document.getElementsByClassName("right floated time meta")
+      var admin_dates = document.getElementsByClassName("admindate")
+      var norm_dates = document.getElementsByClassName("date")
 
       // Tells user whether they are activating/deactivating admin mode
       // Turning admin mode off will save all changes made
@@ -292,7 +312,7 @@ $('.right.floated.time.meta, .date').each(function() {
         for (var i = 0; i<buttons.length; i++)
         {
           buttons[i].style.display = "none"
-        } 
+        }
         for (var i=0; i<captions.length; i++)
         {
           captions[i].setAttribute("contenteditable", "false");
@@ -301,15 +321,44 @@ $('.right.floated.time.meta, .date').each(function() {
         {
           likes[i].setAttribute("contenteditable", "false");
         }
+
+        //get all the admin times and change back to normal
+        while(admin_times.length)
+        {
+          admin_times[0].setAttribute("contenteditable", "false");
+          //make text on page human time form
+          var hidden_time = $(admin_times[0]).siblings( ".hiddentime" );
+          var ms = parseInt($(hidden_time).text(), 10);
+          let time = new Date(ms);
+          $(admin_times[0]).text(humanized_time_span(time));
+          //changing class name must happen last bc that removes this time from admin_times array
+          admin_times[0].className = "right floated time meta";
+          //console.log("got admintime and made time");
+        }
+        //get all the admin comment times and change back to normal
+        while(admin_dates.length)
+        {
+          admin_dates[0].setAttribute("contenteditable", "false");
+          //make text on page human time form
+          var hidden_date = $($(admin_dates[0]).parent()).siblings( ".hiddendate" );
+          var ms = parseInt($(hidden_date).text(), 10);
+          let date = new Date(ms);
+          $(admin_dates[0]).text(humanized_time_span(date));
+          //changing class name must happen last bc that removes this time from admin_times array
+          admin_dates[0].className = "date";
+          //console.log("got admintime and made time");
+        }
+        //reload the page so the posts update with new changes made
+        location = location;
       }
-      else {        
+      else {
         alert("Admin Mode On: Click directly on the parts of the post that you would like to edit. Click 'save' next to the reply button to save your changes");
 
         // Display the 'save' button
         for (var i = 0; i<buttons.length; i++)
         {
           buttons[i].style.display = "initial"
-        } 
+        }
         for (var i=0; i<captions.length; i++)
         {
           captions[i].setAttribute("contenteditable", "true");
@@ -318,6 +367,43 @@ $('.right.floated.time.meta, .date').each(function() {
         {
           likes[i].setAttribute("contenteditable", "true");
         }
+        //get all the normal times and change to admin time
+        while(norm_times.length)
+        {
+          norm_times[0].setAttribute("contenteditable", "true");
+          //need to make text on page admin edit form
+          var hidden_time = $(norm_times[0]).siblings( ".hiddentime" );
+          var ms = parseInt($(hidden_time).text(), 10);
+          ms = Date.now() - ms; //need to subtract to get how long ago post happened
+          var days = Math.floor(ms / 86400000);
+          ms = ms % 86400000;//ms remaining after removing days
+          var hours = Math.floor(ms / 3600000);
+          ms = ms % 3600000; //ms remaining after removings days and hours
+          var mins = Math.floor(ms / 60000);
+          $(norm_times[0]).html(days+":"+hours+":"+mins);
+          //changing class name must happen last bc that removes this time from admin_times array
+          norm_times[0].className = "right floated admintime meta";
+          //console.log("got time and made admintime");
+        }
+
+        //get all the normal comment times and change to admin time
+        while(norm_dates.length)
+        {
+          norm_dates[0].setAttribute("contenteditable", "true");
+          //need to make text on page admin edit form
+          var hidden_date = $($(norm_dates[0]).parent()).siblings( ".hiddendate" );
+          var ms = parseInt($(hidden_date).text(), 10);
+          ms = Date.now() - ms; //need to subtract to get how long ago post happened
+          var days = Math.floor(ms / 86400000);
+          ms = ms % 86400000;//ms remaining after removing days
+          var hours = Math.floor(ms / 3600000);
+          ms = ms % 3600000; //ms remaining after removings days and hours
+          var mins = Math.floor(ms / 60000);
+          $(norm_dates[0]).html(days+":"+hours+":"+mins);
+          //changing class name must happen last bc that removes this time from admin_times array
+          norm_dates[0].className = "admindate";
+          //console.log("got time and made admintime");
+        }
       }
 
       // Make comments editable
@@ -325,7 +411,7 @@ $('.right.floated.time.meta, .date').each(function() {
       for (var i=0; i<comments.length; i++)
       {
         if (comments[i].getAttribute("contenteditable") == "true")
-        { 
+        {
           comments[i].setAttribute("contenteditable", "false")
         }
         else comments[i].setAttribute("contenteditable", "true")
@@ -336,32 +422,21 @@ $('.right.floated.time.meta, .date').each(function() {
       for (var i=0; i<commlikes.length; i++)
       {
         if (commlikes[i].getAttribute("contenteditable") == "true")
-        { 
+        {
           commlikes[i].setAttribute("contenteditable", "false")
         }
         else commlikes[i].setAttribute("contenteditable", "true")
-      }
-
-      // Make time editable
-      var time = document.getElementsByClassName("right floated time meta")
-      for (var i=0; i<time.length; i++)
-      {
-        if (time[i].getAttribute("contenteditable") == "true")
-        { 
-          time[i].setAttribute("contenteditable", "false");
-        }
-        else time[i].setAttribute("contenteditable", "true")
       }
 
   })
 
   // Click image to replace with a new one (admin functionality)
   $("img.lazyload.post").click(function() {
-    
+
     var captions = document.getElementsByClassName("description")
     if (captions[0].getAttribute("contenteditable")=="true")
     {
-      $(' .ui.tiny.update.modal').modal('show'); 
+      $(' .ui.tiny.update.modal').modal('show');
     }
   })
 
@@ -406,11 +481,11 @@ $("i.big.send.link.icon").click(function() {
     var ava_name = ava.attr( "name" );
     var postID = card.attr( "postID" );
 
-    var mess = '<div class="comment"> <a class="avatar"> <img src="'+ava_img+'"> </a> <div class="content"> <a class="author">'+ava_name+'</a> <div class="metadata"> <span class="date">'+humanized_time_span(date)+'</span> <i class="heart icon"></i> 0 Likes </div> <div class="text">'+text+'</div> <div class="actions"> <a class="like">Like</a> <a class="flag">Flag</a> </div> </div> </div>';   
+    var mess = '<div class="comment"> <a class="avatar"> <img src="'+ava_img+'"> </a> <div class="content"> <a class="author">'+ava_name+'</a> <div class="metadata"> <span class="date">'+humanized_time_span(date)+'</span> <i class="heart icon"></i> 0 Likes </div> <div class="text">'+text+'</div> <div class="actions"> <a class="like">Like</a> <a class="flag">Flag</a> </div> </div> </div>';
     $(this).siblings( "input.newcomment").val('');
     comments.append(mess);
     console.log("######### NEW COMMENTS:  PostID: "+postID+", new_comment time is "+date+" and text is "+text);
-   
+
     if (card.attr( "type" )=='userPost')
       $.post( "/userPost_feed", { postID: postID, new_comment: date, comment_text: text, _csrf : $('meta[name="csrf-token"]').attr('content') } );
     else
@@ -472,9 +547,9 @@ $("i.big.send.link.icon").click(function() {
     $('.ui.small.basic.blocked.modal')
       .modal({
         closable  : false,
-        onDeny    : function(){ 
+        onDeny    : function(){
           //report user
-          
+
         },
         onApprove : function() {
           //unblock user
@@ -484,7 +559,7 @@ $("i.big.send.link.icon").click(function() {
       .modal('show')
     ;
 
-    
+
     console.log("***********Block USER "+username);
     $.post( "/user", { blocked: username, _csrf : $('meta[name="csrf-token"]').attr('content') } );
 
@@ -494,9 +569,9 @@ $("i.big.send.link.icon").click(function() {
   $('.ui.on.small.basic.blocked.modal')
   .modal({
     closable  : false,
-    onDeny    : function(){ 
+    onDeny    : function(){
       //report user
-      
+
     },
     onApprove : function() {
       //unblock user
@@ -609,12 +684,12 @@ $("i.big.send.link.icon").click(function() {
                    closable: false
                   })
                   .dimmer('show');
-      //repeat to ensure its closable             
+      //repeat to ensure its closable
       post.find(".ui.dimmer.flag").dimmer({
                    closable: false
                   })
                   .dimmer('show');
-    
+
 
   });
 
@@ -656,8 +731,8 @@ $("i.big.send.link.icon").click(function() {
     observeChanges: true,
     //throttle:100,
     offset: 250,
-    
-    //USER HAS NOW READ THE POST (READ EVENT) 
+
+    //USER HAS NOW READ THE POST (READ EVENT)
     //onBottomVisibleReverse:function(calculations) { onBottomPassed
       onBottomPassed:function(calculations) {
         console.log(":::::Now passing onBottomPassed:::::");
@@ -672,7 +747,7 @@ $("i.big.send.link.icon").click(function() {
           var read = Date.now();
 
           //actual show the element
-          
+
            parent.find('.read')
             .transition({
               animation: 'fade',
@@ -719,7 +794,7 @@ $("i.big.send.link.icon").click(function() {
     onBottomVisible:function(calculations) {
         console.log("@@@@@@@ Now Seen @@@@@@@@@");
         var parent = $(this).parents(".ui.fluid.card.dim, .profile_card");
-        
+
         var postID = parent.attr( "postID" );
         var start = Date.now();
         console.log("@@@@@@@ UI!!!! @@@@@@SENDING TO DB@@@@@@START POST UI has seen post "+postID+" at time "+start);
@@ -739,7 +814,7 @@ $("i.big.send.link.icon").click(function() {
     //transition : 'fade in',
     //duration   : 1000,
 
-    
+
   })
 ;
 */

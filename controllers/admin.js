@@ -16,7 +16,7 @@ exports.updatePostAdmin = (req, res, next) => {
 
     console.log("@@@@@@@@@@@ TOP postID is  ", req.body.postID);
 
-    //find the object from the right post in feed 
+    //find the object from the right post in feed
     var feedIndex = _.findIndex(user.feedAction, function(o) { return o.post == req.body.postID; });
 
     console.log("@@@ USER index is  ", feedIndex);
@@ -30,9 +30,13 @@ exports.updatePostAdmin = (req, res, next) => {
     //we found the right post, and feedIndex is the right index for it
     console.log("##### FOUND post "+req.body.postID+" at index "+ feedIndex);
 
-       
+
     // Save caption & like edits to the database
-    Script.findOneAndUpdate( {_id: req.body.postID }, { body: req.body.updated_caption, likes: req.body.updated_likes }, function(err, updated) {
+    //also save time
+    var time_parts = req.body.updated_time.split(":"); //seperate day, hr, min
+    var time_ms = (time_parts[0] * 86400000) + (time_parts[1] * 3600000) + (time_parts[2] * 60000); //day + hour + min in ms
+    var time_rel = Date.now() - user.createdAt.getTime() - time_ms;//post time in ms since user creation
+    Script.findOneAndUpdate( {_id: req.body.postID }, { body: req.body.updated_caption, likes: req.body.updated_likes, time: time_rel }, function(err, updated) {
       if (err)
       {
         res.send(err);
@@ -54,9 +58,9 @@ exports.updatePostAdmin = (req, res, next) => {
           return;
         }
       })
-    }); 
+    });
 
-  
+
     user.save((err) => {
       if (err) {
         if (err.code === 11000) {
@@ -86,7 +90,7 @@ exports.updateCommentAdmin = (req, res, next) => {
 
     console.log("@@@@@@@@@@@ TOP postID is  ", req.body.postID);
 
-    //find the object from the right post in feed 
+    //find the object from the right post in feed
     var feedIndex = _.findIndex(user.feedAction, function(o) { return o.post == req.body.postID; });
 
     console.log("@@@ USER index is  ", feedIndex);
@@ -102,7 +106,7 @@ exports.updateCommentAdmin = (req, res, next) => {
 
     console.log(req.body.saveComments);
 
-       
+
     // Save comments
     Script.findOne( {_id: req.body.postID }, function(err, post) {
       if (err)
@@ -110,16 +114,24 @@ exports.updateCommentAdmin = (req, res, next) => {
         res.send(err);
         console.log("update didn't work in find one and update");
         return;
-      } 
+      }
       console.log(post.comments);
-      for (var i=0; i<req.body.saveComments.length / 2; i+=2)
+      for (var i=0; i<req.body.saveComments.length; i+=4)
       {
         for (var j=0; j<post.comments.length; j++)
         {
 
           if (post.comments[j]._id == req.body.saveComments[i])
           {
+            //save body
             post.comments[j].body = req.body.saveComments[i+1];
+            //save likes
+            post.comments[j].likes = req.body.saveComments[i+2];
+            //save time
+            var time_parts = req.body.saveComments[i+3].split(":"); //seperate day, hr, min
+            var time_ms = (time_parts[0] * 86400000) + (time_parts[1] * 3600000) + (time_parts[2] * 60000); //day + hour + min in ms
+            post.comments[j].time = Date.now() - user.createdAt.getTime() - time_ms;//post time in ms since user creation);
+
           }
         }
       }
@@ -132,7 +144,7 @@ exports.updateCommentAdmin = (req, res, next) => {
           res.send({result:"success"});
       });
 
-    }); 
+    });
   });
 };
   /*
@@ -153,7 +165,7 @@ exports.updatePostPhoto = (req, res) => {
     console.log("Text Body of Post is "+req.body.body);
 
 
-  
+
     var post = new Object();
     post.body = req.body.body;
     post.absTime = Date.now();
@@ -170,7 +182,7 @@ exports.updatePostPhoto = (req, res) => {
       post.postID = user.numPosts;
       post.type = "user_post";
       post.comments = [];
-      
+
 
       //Now we find any Actor Replies (Comments) that go along with it
       Notification.find()
@@ -202,11 +214,11 @@ exports.updatePostPhoto = (req, res) => {
               //add to posts
               post.comments.push(tmp_actor_reply);
 
-              
+
 
             }
 
-            
+
           }//end of IF
 
           //console.log("numPost is now "+user.numPosts);
@@ -236,6 +248,3 @@ exports.updatePostPhoto = (req, res) => {
   });
   */
 };
-
-  
-  
