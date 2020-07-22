@@ -36,7 +36,7 @@ exports.updatePostAdmin = (req, res, next) => {
     var time_parts = req.body.updated_time.split(":"); //seperate day, hr, min
     var time_ms = (time_parts[0] * 86400000) + (time_parts[1] * 3600000) + (time_parts[2] * 60000); //day + hour + min in ms
     var time_rel = Date.now() - user.createdAt.getTime() - time_ms;//post time in ms since user creation
-    Script.findOneAndUpdate( {_id: req.body.postID }, { body: req.body.updated_caption, likes: req.body.updated_likes, time: time_rel }, function(err, updated) {
+    Script.findOneAndUpdate( {_id: req.body.postID }, { body: req.body.updated_caption, likes: req.body.updated_likes, time: time_rel, experiment_group: req.body.expGroup, class: req.body.postClass }, function(err, updated) {
       if (err)
       {
         res.send(err);
@@ -78,7 +78,78 @@ exports.updatePostAdmin = (req, res, next) => {
       res.send({result:"success"});
     });
   });
-  }
+}
+
+exports.newPostAdmin = (req, res) => {
+
+    console.log("###########NEW ADMIN POST###########");
+    console.log("Text Body of Post is "+req.body.caption);
+
+    //Make sure the file exists
+    if (req.file)
+    {
+      //converting time
+      var time_parts = req.body.time.split(":"); //seperate day, hr, min
+      var time_ms = (time_parts[0] * 86400000) + (time_parts[1] * 3600000) + (time_parts[2] * 60000); //day + hour + min in ms
+      var post_time = Date.now() - req.user.createdAt.getTime() - time_ms;//post time in ms since user creation
+
+      //finding actor
+      console.log("FILENAME IS:"+req.file.filename);
+      Actor.findOne({ 'profile.name': req.body.user }, function(err, actor) {
+        //console.log("IN FIND ONE: " + actor)
+        Script.find()
+          .sort('-post_id')
+          .exec(function (err, script_feed) {
+            console.log("max post id is: "+script_feed[0].post_id);
+        //make the post
+            const post = new Script({
+              body: req.body.caption,
+              post_id: script_feed[0].post_id+1,
+              class: req.body.class,
+              picture: req.file.filename,
+              //highread: ,
+              //lowread: ,
+              likes: req.body.likes,
+              experiment_group: req.body.expGroup,
+              comments: [],
+              //reply: ,
+              time: post_time,
+              actor: actor
+            });
+
+            post.save((err) => {
+              if (err) {
+                return next(err);
+              }
+              req.flash('success', { msg: 'Post has been added. Post ID is '+post.post_id });
+              res.redirect('/');
+            });
+          });
+      });
+    }
+
+    else
+    {
+      console.log("@#@#@#@#@#@#@#ERROR: Oh Snap, Made a admin post but there is no file!")
+      req.flash('errors', { msg: 'ERROR: There is no post file.' });
+      res.redirect('/');
+    }
+};
+
+exports.deletePostAdmin = (req, res, next) => {
+  Script.findById(req.body.postID, (err, post) => {
+    console.log("TRYING TO DELETE POST: "+req.body.postID);
+    //if post doesn't exist
+    if (err) {return next(err); }
+
+    post.delete((err) => {
+      if (err) {
+        return next(err);
+      }
+      res.send({result:"success"});
+    });
+  });
+};
 // Save changes to post comments
 // ** NEEDS TO BE IMPLEMENTED **
 exports.updateCommentAdmin = (req, res, next) => {

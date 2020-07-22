@@ -56,3 +56,36 @@ In main.js:
 In script.pug:
 - added hidden attribute hiddentime on line 165 to pass on the post time value
 - added hidden attribute hiddendate on line 267 to pass on the comment time value
+
+
+Changes made 7/22 (in order of file and location in code)
+=======================
+In app.js:
+-include study.json
+-create multer object for admin creation of new actor post
+-included new admin post path in list of paths that nust wait for csrf to be checked
+-attach study.json to app object
+-created new post routes for admin creating and deleting posts
+
+In controllers/admin.js:
+-included experiment group and class in findOneAndUpdate
+-created exports.newPostAdmin to save new posts to the database
+-created exports.deletePostAdmin to remove posts from the database
+
+In controllers/script.js:
+-include study.json when rendering the script so exp and class variables can be accessed
+
+In main.js:
+-created a new modal "adminpost" that appears on when clicked and has a form validator and submits
+-picture functions for admin post, nearly identical to normal picture functions
+-in admin mode toggle, hide/show the delete button, actor/exp group/class dropdown menus
+
+In script.pug:
+-input button for new admin post
+-changed the actor icons on post, dropdown has display:  none, normal display is default
+-exp group and class drop down menus, start as display: none
+-added extra label to the comment text so the text in the dropdowns doesn't also become editable in admin mode
+-admin create post modal
+-admin delete post modal
+
+Made new file study.json that has study info

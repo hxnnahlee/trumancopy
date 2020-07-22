@@ -42,6 +42,10 @@ $(window).on("load", function() {
       observeChanges  : true
     });
 
+  $(' .ui.tiny.adminpost.modal').modal({
+      observeChanges  : true
+  })
+
   $('.ui.tiny.update.modal').modal({
     observeChanges : true
   });
@@ -50,6 +54,11 @@ $(window).on("load", function() {
   $("#newpost, a.item.newpost").click(function () {
     $(' .ui.tiny.post.modal').modal('show');
 });
+
+  //for admin new post modal
+  $("#adminpost").click(function () {
+    $('.ui.tiny.adminpost.modal').modal('show');
+  });
 
   //new post validator (picture and text can not be empty)
   $('.ui.feed.form')
@@ -91,7 +100,102 @@ $(window).on("load", function() {
         console.log("Submit the junks!!!!")
         //$('.ui.tiny.nudge.modal').modal('show');
         //return true;
-        });
+  });
+
+  //new admin post validator
+  $.fn.form.settings.rules.greaterEqualZero = function(value) {
+    return (value >= 0);
+  };
+
+  $('.ui.adminfeed.form')
+  .form({
+    on: 'blur',
+    fields: {
+      user: {
+        identifier  : 'user',
+        rules: [
+          {
+            type   : 'empty',
+            prompt : 'Please choose an actor'
+          }
+        ]
+      },
+      caption: {
+        identifier  : 'caption',
+        rules: [
+          {
+            type   : 'empty',
+            prompt : 'Please add some text about your meal'
+          }
+        ]
+      },
+      time: {
+        identifier  : 'time',
+        rules: [{
+          type: 'regExp',
+          value: /(\d{1,3}):(\d{1,3}):(\d{1,3})/i,
+          prompt : 'Time should be formatted day:hr:min'
+        }]
+      },
+      likes: {
+        identifier  : 'likes',
+        rules: [
+          {
+            type: 'integer',
+            prompt : 'Likes should be an integer'
+          },
+          {
+            type: 'greaterEqualZero[]',
+            prompt: 'Likes should be nonnegative'
+          }
+        ]
+      },
+      expGroup: {
+        identifier  : 'expGroup',
+        rules: [
+          {
+            type   : 'empty',
+            prompt : 'Please choose an experiment group'
+          }
+        ]
+      },
+      class: {
+        identifier  : 'class',
+        rules: [
+          {
+            type   : 'empty',
+            prompt : 'Please choose a class'
+          }
+        ]
+      },
+      adminpicinput: {
+        identifier  : 'adminpicinput',
+        rules: [
+          {
+            type: 'notExactly[/public/photo-camera.svg]',
+            prompt : 'Please click on Camera Icon to add a photo'
+          }
+        ]
+      }
+    },
+
+    onSuccess:function(event, fields){
+      console.log("Event is :");
+      //console.log(event);
+      console.log("fields is :");
+      //console.log(fields);
+      $(".ui.adminfeed.form")[0].submit();
+    }
+
+  });
+
+  $('.ui.adminfeed.form').submit(function(e) {
+        e.preventDefault();
+        console.log("Submit the admin junks!!!!")
+        //$('.ui.tiny.nudge.modal').modal('show');
+        //return true;
+  });
+
 
 //update photo
     $('.ui.update.form')
@@ -152,8 +256,21 @@ function readURL(input) {
     }
   }
 
+  //Picture Preview on Image Selection for admin
+  function readURLAdminPost(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#imgInpAdminPost').attr('src', e.target.result);
+            console.log("FILE is "+ e.target.result);
+        }
+
+        reader.readAsDataURL(input.files[0]);
+    }
+  }
+
   $("#picinput").change(function(){
-      //console.log("@@@@@ changing a photo");
+      console.log("@@@@@ changing a photo");
       readURL(this);
   });
 
@@ -162,7 +279,14 @@ function readURL(input) {
     readURLAdmin(this);
   });
 
+  $("#adminpicinput").change(function(){
+    console.log("adding photo ..");
+    readURLAdminPost(this);
+  });
+
 $(".actor.ui.selection.dropdown").dropdown();
+
+$(".var.ui.selection.dropdown").dropdown();
 
 //Modal to show "other users" in Notifications
 /*
@@ -244,6 +368,31 @@ $('.right.floated.admintime.meta, .admindate').each(function() {
     window.location.href='/account';
   });
 
+  //admin delete post button
+  $('.ui.adminDelete.button')
+  .on('click', function() {
+    console.log('clicked delete');
+    $('.ui.tiny.deletePost.modal').modal('show');
+    var card = $(this).parents( ".ui.fluid.card" );
+    var postID = card.attr( "postID" );
+    //if they confirm the delete
+    $('input.ui.confirmDelete.button')
+    .on('click', function() {
+      console.log('confirmed delete');
+      $('.ui.tiny.deletePost.modal').modal('hide');
+      $.post( '/delete_post_admin', { postID: postID, _csrf : $('meta[name="csrf-token"]').attr('content') }, function(response){
+        document.location.reload(true);
+      });
+    });
+  });
+
+  //admin cancel delete on confirmation modal
+  $('input.ui.blue.cancelDelete.button')
+  .on('click', function() {
+    console.log('canceled delete');
+    $('.ui.tiny.deletePost.modal').modal('hide');
+  })
+
   // This will save the changes on the card that 'save' is clicked on
   $('.ui.adminSave.button')
   .on('click', function() {
@@ -274,9 +423,11 @@ $('.right.floated.admintime.meta, .admindate').each(function() {
 
     var actor = card.find(".actor.ui.selection.dropdown")[0].innerText;
     console.log(actor);
+    var expGroup = card.find(".var.ui.selection.dropdown.expGroup")[0].innerText;
+    var postClass = card.find(".var.ui.selection.dropdown.class")[0].innerText;
 
     var pID = card.attr( "postID" );
-    $.post( "/update_post_admin", {  updated_time: time, actorName: actor, postID: pID, updated_caption: caption, updated_likes: likes, _csrf : $('meta[name="csrf-token"]').attr('content') } );
+    $.post( "/update_post_admin", {  updated_time: time, actorName: actor, postID: pID, updated_caption: caption, updated_likes: likes, expGroup: expGroup, postClass: postClass, _csrf : $('meta[name="csrf-token"]').attr('content') } );
     if (comments.length > 0)
     {
       $.post( "/update_comments", { postID: pID, saveComments: commentsArray,  _csrf : $('meta[name="csrf-token"]').attr('content') });
@@ -295,12 +446,18 @@ $('.right.floated.admintime.meta, .admindate').each(function() {
   .on('click', function() {
 
       var captions = document.getElementsByClassName("description")
+      var comments = document.getElementsByClassName("commentText")
       var buttons = document.getElementsByClassName("adminSave");
       var likes = document.getElementsByClassName("left pointing label count")
+      var comment_likes = document.getElementsByClassName("num")
       var admin_times = document.getElementsByClassName("right floated admintime meta")
       var norm_times = document.getElementsByClassName("right floated time meta")
       var admin_dates = document.getElementsByClassName("admindate")
       var norm_dates = document.getElementsByClassName("date")
+      var delete_buttons = document.getElementsByClassName("adminDelete")
+      var var_drops = document.getElementsByClassName("varDropdowns")
+      var actor_drops = document.getElementsByClassName("actorDropdown")
+      var actor_icons = document.getElementsByClassName("normalActorIcon")
 
       // Tells user whether they are activating/deactivating admin mode
       // Turning admin mode off will save all changes made
@@ -313,13 +470,41 @@ $('.right.floated.admintime.meta, .admindate').each(function() {
         {
           buttons[i].style.display = "none"
         }
+        // Hide the 'delete post' button
+        for (var i = 0; i<delete_buttons.length; i++)
+        {
+          delete_buttons[i].style.display = "none"
+        }
+        // Hide the experimental group and class dropdowns
+        for (var i = 0; i<var_drops.length; i++)
+        {
+          var_drops[i].style.display = "none"
+        }
+        // Hide the actor dropdowns
+        for (var i = 0; i<actor_drops.length; i++)
+        {
+          actor_drops[i].style.display = "none"
+        }
+        //display actor icons
+        for (var i = 0; i<actor_icons.length; i++)
+        {
+          actor_icons[i].style.display = "initial"
+        }
         for (var i=0; i<captions.length; i++)
         {
           captions[i].setAttribute("contenteditable", "false");
         }
+        for (var i=0; i<comments.length; i++)
+        {
+          comments[i].setAttribute("contenteditable", "false");
+        }
         for (var i=0; i<likes.length; i++)
         {
           likes[i].setAttribute("contenteditable", "false");
+        }
+        for (var i=0; i<comment_likes.length; i++)
+        {
+          comment_likes[i].setAttribute("contenteditable", "false");
         }
 
         //get all the admin times and change back to normal
@@ -359,13 +544,41 @@ $('.right.floated.admintime.meta, .admindate').each(function() {
         {
           buttons[i].style.display = "initial"
         }
+        //display the 'delete post' button
+        for (var i = 0; i<delete_buttons.length; i++)
+        {
+          delete_buttons[i].style.display = "initial"
+        }
+        //display the experiemntal group and class dropdowns
+        for (var i = 0; i<var_drops.length; i++)
+        {
+          var_drops[i].style.display = "initial"
+        }
+        //display actor dropdowns
+        for (var i = 0; i<actor_drops.length; i++)
+        {
+          actor_drops[i].style.display = "initial"
+        }
+        // Hide the actor icons
+        for (var i = 0; i<actor_icons.length; i++)
+        {
+          actor_icons[i].style.display = "none"
+        }
         for (var i=0; i<captions.length; i++)
         {
           captions[i].setAttribute("contenteditable", "true");
         }
+        for (var i=0; i<comments.length; i++)
+        {
+          comments[i].setAttribute("contenteditable", "true");
+        }
         for (var i=0; i<likes.length; i++)
         {
           likes[i].setAttribute("contenteditable", "true");
+        }
+        for (var i=0; i<comment_likes.length; i++)
+        {
+          comment_likes[i].setAttribute("contenteditable", "true");
         }
         //get all the normal times and change to admin time
         while(norm_times.length)
@@ -406,27 +619,15 @@ $('.right.floated.admintime.meta, .admindate').each(function() {
         }
       }
 
-      // Make comments editable
-      var comments = document.getElementsByClassName("text")
-      for (var i=0; i<comments.length; i++)
-      {
-        if (comments[i].getAttribute("contenteditable") == "true")
-        {
-          comments[i].setAttribute("contenteditable", "false")
-        }
-        else comments[i].setAttribute("contenteditable", "true")
-      }
-
       // Make number of comment likes editable
-      var commlikes = document.getElementsByClassName("num")
-      for (var i=0; i<commlikes.length; i++)
-      {
-        if (commlikes[i].getAttribute("contenteditable") == "true")
-        {
-          commlikes[i].setAttribute("contenteditable", "false")
-        }
-        else commlikes[i].setAttribute("contenteditable", "true")
-      }
+//      for (var i=0; i<commlikes.length; i++)
+//      {
+//        if (commlikes[i].getAttribute("contenteditable") == "true")
+//        {
+//          commlikes[i].setAttribute("contenteditable", "false")
+//        }
+//        else commlikes[i].setAttribute("contenteditable", "true")
+//      }
 
   })
 
