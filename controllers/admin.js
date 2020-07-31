@@ -3,7 +3,72 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const _ = require('lodash');
 const Actor = require('../models/Actor.js');
+const study = require('../study.json');
 
+
+exports.getActors = (req, res, next) => {
+  Actor.find()
+    .sort('username')
+    .exec(function (err, actors) {
+      if (err) {
+        return next(err);
+      }
+      res.render('admin_actors', {actors: actors, study: study});
+    });
+};
+
+exports.newActor = (req, res, next) => {
+  console.log("###########NEW ACTOR###########");
+  console.log("Username is "+req.body.username);
+
+  //Make sure the file exists
+  if (req.file)
+  {
+    const actor = new Actor({
+      class: req.body.class,
+      username: req.body.username,
+      profile: {
+        name: req.body.profilename,
+        //gender: String,
+        age: req.body.age,
+        location: req.body.location,
+        bio: req.body.bio,
+        //fakepic: String,
+        picture: req.file.filename
+      }
+    });
+
+    actor.save((err) => {
+      if (err) {
+        return next(err);
+      }
+      req.flash('success', { msg: 'Actor has been added.'});
+      res.redirect('/actors');
+    });
+  }
+
+  else
+  {
+    console.log("@#@#@#@#@#@#@#ERROR: Oh Snap, Made a admin post but there is no file!")
+    req.flash('errors', { msg: 'ERROR: There is no post file.' });
+    res.redirect('/');
+  }
+};
+
+exports.deleteActor = (req, res, next) => {
+  Actor.findOne({ 'username': req.body.username}, (err, actor) => {
+    console.log("TRYING TO DELETE ACTOR: @"+req.body.username);
+    //if actor doesn't exist
+    if (err) {return next(err); }
+
+    actor.delete((err) => {
+      if (err) {
+        return next(err);
+      }
+      res.send({result:"success"});
+    });
+  });
+};
 
 /**
  * POST /update_post_admin/
@@ -16,7 +81,7 @@ exports.updatePostAdmin = (req, res, next) => {
 
     console.log("@@@@@@@@@@@ TOP postID is  ", req.body.postID);
 
-    //find the object from the right post in feed 
+    //find the object from the right post in feed
     var feedIndex = _.findIndex(user.feedAction, function(o) { return o.post == req.body.postID; });
 
     console.log("@@@ USER index is  ", feedIndex);
@@ -30,9 +95,13 @@ exports.updatePostAdmin = (req, res, next) => {
     //we found the right post, and feedIndex is the right index for it
     console.log("##### FOUND post "+req.body.postID+" at index "+ feedIndex);
 
-       
+
     // Save caption & like edits to the database
-    Script.findOneAndUpdate( {_id: req.body.postID }, { body: req.body.updated_caption, likes: req.body.updated_likes }, function(err, updated) {
+    //also save time
+    var time_parts = req.body.updated_time.split(":"); //seperate day, hr, min
+    var time_ms = (time_parts[0] * 86400000) + (time_parts[1] * 3600000) + (time_parts[2] * 60000); //day + hour + min in ms
+    var time_rel = Date.now() - user.createdAt.getTime() - time_ms;//post time in ms since user creation
+    Script.findOneAndUpdate( {_id: req.body.postID }, { body: req.body.updated_caption, likes: req.body.updated_likes, time: time_rel, experiment_group: req.body.expGroup, class: req.body.postClass }, function(err, updated) {
       if (err)
       {
         res.send(err);
@@ -54,9 +123,9 @@ exports.updatePostAdmin = (req, res, next) => {
           return;
         }
       })
-    }); 
+    });
 
-  
+
     user.save((err) => {
       if (err) {
         if (err.code === 11000) {
@@ -74,7 +143,78 @@ exports.updatePostAdmin = (req, res, next) => {
       res.send({result:"success"});
     });
   });
-  }
+}
+
+exports.newPostAdmin = (req, res) => {
+
+    console.log("###########NEW ADMIN POST###########");
+    console.log("Text Body of Post is "+req.body.caption);
+
+    //Make sure the file exists
+    if (req.file)
+    {
+      //converting time
+      var time_parts = req.body.time.split(":"); //seperate day, hr, min
+      var time_ms = (time_parts[0] * 86400000) + (time_parts[1] * 3600000) + (time_parts[2] * 60000); //day + hour + min in ms
+      var post_time = Date.now() - req.user.createdAt.getTime() - time_ms;//post time in ms since user creation
+
+      //finding actor
+      console.log("FILENAME IS:"+req.file.filename);
+      Actor.findOne({ 'profile.name': req.body.user }, function(err, actor) {
+        //console.log("IN FIND ONE: " + actor)
+        Script.find()
+          .sort('-post_id')
+          .exec(function (err, script_feed) {
+            console.log("max post id is: "+script_feed[0].post_id);
+        //make the post
+            const post = new Script({
+              body: req.body.caption,
+              post_id: script_feed[0].post_id+1,
+              class: req.body.class,
+              picture: req.file.filename,
+              //highread: ,
+              //lowread: ,
+              likes: req.body.likes,
+              experiment_group: req.body.expGroup,
+              comments: [],
+              //reply: ,
+              time: post_time,
+              actor: actor
+            });
+
+            post.save((err) => {
+              if (err) {
+                return next(err);
+              }
+              req.flash('success', { msg: 'Post has been added. Post ID is '+post.post_id });
+              res.redirect('/');
+            });
+          });
+      });
+    }
+
+    else
+    {
+      console.log("@#@#@#@#@#@#@#ERROR: Oh Snap, Made a admin post but there is no file!")
+      req.flash('errors', { msg: 'ERROR: There is no post file.' });
+      res.redirect('/');
+    }
+};
+
+exports.deletePostAdmin = (req, res, next) => {
+  Script.findById(req.body.postID, (err, post) => {
+    console.log("TRYING TO DELETE POST: "+req.body.postID);
+    //if post doesn't exist
+    if (err) {return next(err); }
+
+    post.delete((err) => {
+      if (err) {
+        return next(err);
+      }
+      res.send({result:"success"});
+    });
+  });
+};
 // Save changes to post comments
 // ** NEEDS TO BE IMPLEMENTED **
 exports.updateCommentAdmin = (req, res, next) => {
@@ -86,7 +226,7 @@ exports.updateCommentAdmin = (req, res, next) => {
 
     console.log("@@@@@@@@@@@ TOP postID is  ", req.body.postID);
 
-    //find the object from the right post in feed 
+    //find the object from the right post in feed
     var feedIndex = _.findIndex(user.feedAction, function(o) { return o.post == req.body.postID; });
 
     console.log("@@@ USER index is  ", feedIndex);
@@ -102,7 +242,7 @@ exports.updateCommentAdmin = (req, res, next) => {
 
     console.log(req.body.saveComments);
 
-       
+
     // Save comments
     Script.findOne( {_id: req.body.postID }, function(err, post) {
       if (err)
@@ -110,16 +250,24 @@ exports.updateCommentAdmin = (req, res, next) => {
         res.send(err);
         console.log("update didn't work in find one and update");
         return;
-      } 
+      }
       console.log(post.comments);
-      for (var i=0; i<req.body.saveComments.length / 2; i+=2)
+      for (var i=0; i<req.body.saveComments.length; i+=4)
       {
         for (var j=0; j<post.comments.length; j++)
         {
 
           if (post.comments[j]._id == req.body.saveComments[i])
           {
+            //save body
             post.comments[j].body = req.body.saveComments[i+1];
+            //save likes
+            post.comments[j].likes = req.body.saveComments[i+2];
+            //save time
+            var time_parts = req.body.saveComments[i+3].split(":"); //seperate day, hr, min
+            var time_ms = (time_parts[0] * 86400000) + (time_parts[1] * 3600000) + (time_parts[2] * 60000); //day + hour + min in ms
+            post.comments[j].time = Date.now() - user.createdAt.getTime() - time_ms;//post time in ms since user creation);
+
           }
         }
       }
@@ -132,7 +280,7 @@ exports.updateCommentAdmin = (req, res, next) => {
           res.send({result:"success"});
       });
 
-    }); 
+    });
   });
 };
   /*
@@ -153,7 +301,7 @@ exports.updatePostPhoto = (req, res) => {
     console.log("Text Body of Post is "+req.body.body);
 
 
-  
+
     var post = new Object();
     post.body = req.body.body;
     post.absTime = Date.now();
@@ -170,7 +318,7 @@ exports.updatePostPhoto = (req, res) => {
       post.postID = user.numPosts;
       post.type = "user_post";
       post.comments = [];
-      
+
 
       //Now we find any Actor Replies (Comments) that go along with it
       Notification.find()
@@ -202,11 +350,11 @@ exports.updatePostPhoto = (req, res) => {
               //add to posts
               post.comments.push(tmp_actor_reply);
 
-              
+
 
             }
 
-            
+
           }//end of IF
 
           //console.log("numPost is now "+user.numPosts);
@@ -236,6 +384,3 @@ exports.updatePostPhoto = (req, res) => {
   });
   */
 };
-
-  
-  

@@ -1,0 +1,44 @@
+{
+  "name": "truman",
+  "version": "1.0.0",
+  "description": "Base version of the Truman Platform",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/difrad/truman"
+  },
+  "experiment_groups": [
+    {
+      "var": "var1",
+      "description": "var1 description"
+    },
+    {
+      "var": "var2",
+      "description": "var2 description"
+    },
+    {
+      "var": "var3",
+      "description": "var3 description"
+    },
+    {
+      "var": "var4",
+      "description": "var4 description"
+    }
+  ],
+  "classes": [
+    {
+      "var": "normal",
+      "description": "normal description"
+    },
+    {
+      "var": "cohort",
+      "description": "cohort description"
+    }
+  ],
+  "actor_classes": [
+    "normal",
+    "bully",
+    "victim",
+    "highread",
+    "cohort"
+  ]
+}

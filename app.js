@@ -20,6 +20,8 @@ const expressValidator = require('express-validator');
 const expressStatusMonitor = require('express-status-monitor');
 var schedule = require('node-schedule');
 
+const study = require('./study.json');
+
 const multer = require('multer');
 //Math.random().toString(36)+'00000000000000000').slice(2, 10) + Date.now()
 
@@ -30,11 +32,26 @@ var m_options = multer.diskStorage({ destination : path.join(__dirname, 'uploads
   }
 });
 
-var userpost_options = multer.diskStorage({ destination : path.join(__dirname, 'uploads/user_post') ,
+var adminpost_options = multer.diskStorage({ destination : path.join(__dirname, 'post_pictures') ,
   filename: function (req, file, cb) {
     var lastsix = req.user.id.substr(req.user.id.length - 6);
     var prefix = lastsix + Math.random().toString(36).slice(2, 10);
+    cb(null, prefix + file.originalname.replace(/[^A-Z0-9]+/ig, "."));
+  }
+});
+
+var userpost_options = multer.diskStorage({ destination : path.join(__dirname, 'uploads/user_post') ,
+  filename: function (req, file, cb) {
+    var lastsix = req.body.user.id.substr(req.user.id.length - 6);
+    var prefix = lastsix + Math.random().toString(36).slice(2, 10);
     cb(null, prefix + file.originalname.replace(/[^A-Z0-9]+/ig, "_"));
+  }
+});
+
+var actorprofile_options = multer.diskStorage({ destination : path.join(__dirname, 'profile_pictures') ,
+  filename: function (req, file, cb) {
+    var prefix = req.body.username
+    cb(null, prefix + file.originalname.replace(/[^A-Z0-9]+/ig, "."));
   }
 });
 
@@ -48,6 +65,8 @@ var useravatar_options = multer.diskStorage({ destination : path.join(__dirname,
 //const upload = multer({ dest: path.join(__dirname, 'uploads') });
 const upload= multer({ storage: m_options });
 const userpostupload= multer({ storage: userpost_options });
+const adminpostupload= multer({ storage: adminpost_options });
+const actorprofileupload= multer({ storage: actorprofile_options });
 const useravatarupload= multer({ storage: useravatar_options });
 
 
@@ -97,59 +116,59 @@ mongoose.connection.on('error', (err) => {
 var rule = new schedule.RecurrenceRule();
 rule.hour = 4;
 rule.minute = 55;
- 
+
 var j = schedule.scheduleJob(rule, function(){
   console.log('@@@@@@######@@@@@@@@#########@@@@@@@@@@@@########');
   console.log('@@@@@@######@@@@@@@@Sending Mail to All ACTIVE USERS!!!!!');
   console.log('@@@@@@######@@@@@@@@#########@@@@@@@@@@@@########');
   userController.mailAllActiveUsers();
-}); 
+});
 
 
 /****
-**CRON JOBS 
+**CRON JOBS
 **Check if users are still active 12 and 20
 */
 var rule1 = new schedule.RecurrenceRule();
 rule1.hour = 4;
 rule1.minute = 30;
- 
+
 var j = schedule.scheduleJob(rule1, function(){
   console.log('@@@@@@######@@@@@@@@#########@@@@@@@@@@@@########');
   console.log('@@@@@@######@@@@@@@@Checking if Users are active!!!!!');
   console.log('@@@@@@######@@@@@@@@#########@@@@@@@@@@@@########');
   userController.stillActive();
-}); 
+});
 
 /****
-**CRON JOBS 
+**CRON JOBS
 **Check if users are still active 12 and 20
 */
 var rule2 = new schedule.RecurrenceRule();
 rule2.hour = 12;
 rule2.minute = 30;
- 
+
 var j2 = schedule.scheduleJob(rule2, function(){
   console.log('@@@@@@######@@@@@@@@#########@@@@@@@@@@@@########');
   console.log('@@@@@@######@@@@@@@@2222 Checking if Users are active 2222!!!!!');
   console.log('@@@@@@######@@@@@@@@#########@@@@@@@@@@@@########');
   userController.stillActive();
-}); 
+});
 
 /****
-**CRON JOBS 
+**CRON JOBS
 **Check if users are still active 12 and 20
 */
 var rule3 = new schedule.RecurrenceRule();
 rule3.hour = 20;
 rule3.minute = 30;
- 
+
 var j3 = schedule.scheduleJob(rule3, function(){
   console.log('@@@@@@######@@@@@@@@#########@@@@@@@@@@@@########');
   console.log('@@@@@@######@@@@@@@@3333 Checking if Users are active 3333!!!!!');
   console.log('@@@@@@######@@@@@@@@#########@@@@@@@@@@@@########');
   userController.stillActive();
-}); 
+});
 
 
 /**
@@ -187,9 +206,8 @@ app.use(passport.session());
 app.use(flash());
 
 
-
 app.use((req, res, next) => {
-  if ((req.path === '/api/upload') || (req.path === '/post/new') || (req.path === '/account/profile') || (req.path === '/account/signup_info_post')) {
+  if ((req.path === '/api/upload') || (req.path === '/post/new') || (req.path === '/actor/new') || (req.path === '/adminpost/new') || (req.path === '/account/profile') || (req.path === '/account/signup_info_post')) {
     console.log("Not checking CSRF - out path now");
     //console.log("@@@@@request is " + req);
     next();
@@ -243,7 +261,7 @@ app.use('/semantic',express.static(path.join(__dirname, 'semantic'), { maxAge: 3
 app.use(express.static(path.join(__dirname, 'uploads'), { maxAge: 31557600000 }));
 app.use('/post_pictures', express.static(path.join(__dirname, 'post_pictures'), { maxAge: 31557600000 }));
 app.use('/profile_pictures',express.static(path.join(__dirname, 'profile_pictures'), { maxAge: 31557600000 }));
-
+app.use('/study',express.static(path.join(__dirname, 'study')));
 /**
  * Primary app routes.
  */
@@ -255,7 +273,7 @@ function isAdminAuthenticated(req, res, next) {
   {
     return next();
   }
-  else 
+  else
   {
     req.flash('errors', { msg: 'Error: You are not admin authenticated' });
     res.redirect('/');
@@ -343,6 +361,11 @@ app.post('/feed', passportConfig.isAuthenticated, scriptController.postUpdateFee
 app.post('/pro_feed', passportConfig.isAuthenticated, scriptController.postUpdateProFeedAction);
 app.post('/userPost_feed', passportConfig.isAuthenticated, scriptController.postUpdateUserPostFeedAction);
 
+app.get('/actors', passportConfig.isAuthenticated, adminController.getActors);
+app.post('/actor/new', actorprofileupload.single('actorpicinput'), check, csrf, adminController.newActor);
+app.post('/actor_delete', passportConfig.isAuthenticated, adminController.deleteActor);
+app.post('/adminpost/new', adminpostupload.single('adminpicinput'), check, csrf, adminController.newPostAdmin);
+app.post('/delete_post_admin', passportConfig.isAuthenticated, adminController.deletePostAdmin);
 app.post('/update_post_admin', passportConfig.isAuthenticated, adminController.updatePostAdmin);
 app.post('/update_post_photo', passportConfig.isAuthenticated, adminController.updatePostPhoto);
 app.post('/update_comments', passportConfig.isAuthenticated, adminController.updateCommentAdmin);

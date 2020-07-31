@@ -1,10 +1,10 @@
 extends ui_layout_no
-  
+
 block content
 
   //-Change this URI to a CDN you are using for Photos
   -var cdn = "";
-  .computer.only.tablet.only.four.wide.column 
+  .computer.only.tablet.only.four.wide.column
     .ui.card
       .image
         if user.profile.picture
@@ -37,7 +37,17 @@ block content
           img.ui.avatar.image(src=user.gravatar(60))
       input(type='text', placeholder='Share your meal')
       i.big.photo.link.icon
-  
+    //- Input for new actor post
+    if user.isAdmin
+      #adminpost.ui.fluid.left.labeled.right.icon.input
+        .ui.label
+          if user.profile.picture
+            img.ui.avatar.image(src='/user_post/'+user.profile.picture)
+          else
+            img.ui.avatar.image(src=user.gravatar(60))
+        input(type='text', placeholder='Add a new actor post')
+        i.big.photo.link.icon
+
     each val in script
       //- create a card for each post in val (if by user make the card a little different)
       //- if val.relativeTime - then post came from user_post (so user post, user reply to actor reply to user post)
@@ -47,11 +57,11 @@ block content
         -else if (val.reply) {u_class = "userReply"}
         -else {u_class = "userPost"}
         .ui.fluid.card(u_postID=val.id, type=u_class, postID=val.postID)
-          
+
           //- This is a User made post
           .content
             .right.floated.time.meta= (user.createdAt.getTime() + val.relativeTime)
-            |  
+            |
             a.ui.avatar.image(href='/me')
               if user.profile.picture
                 img(src='/user_post/'+user.profile.picture)
@@ -98,7 +108,7 @@ block content
                                 if comment.liked
                                   i.red.heart.icon
                                   span=comment.likes
-                                  | Likes 
+                                  | Likes
                                 else
                                   i.heart.icon
                                   span.num=comment.likes
@@ -124,7 +134,7 @@ block content
                                 if comment.liked
                                   i.red.heart.icon
                                   span=comment.likes
-                                  | Likes 
+                                  | Likes
                                 else
                                   i.heart.icon
                                   span.num=comment.likes
@@ -142,7 +152,7 @@ block content
                 if user.profile.picture
                   img.ui.avatar.image(src='/user_post/'+user.profile.picture, name=user.profile.name || user.username || user.id)
                 else
-                  img.ui.avatar.image(src=user.gravatar(60), name=user.profile.name || user.username || user.id)            
+                  img.ui.avatar.image(src=user.gravatar(60), name=user.profile.name || user.username || user.id)
               input.newcomment(type='text', placeholder='Write a Comment')
               i.big.send.link.icon
 
@@ -160,24 +170,31 @@ block content
                         span="The admins will review this post further. We are sorry you had this experience."
           //- Normal Base Post
           .content
-            .right.floated.time.meta= (user.createdAt.getTime() + val.time)
-            |  
+            .right.floated.meta.time= (user.createdAt.getTime() + val.time)
+            |
+            .hiddentime(hidden='true')= (user.createdAt.getTime() + val.time)
             //-a(href='/user/'+val.actor.username)
               img.ui.avatar.image(src=cdn+'/profile_pictures/'+val.actor.profile.picture)
               span=val.actor.profile.name
             if user.isAdmin
-              .actor.ui.selection.dropdown  
-                input(type='hidden', name='user')
-                i.dropdown.icon
-                .default.text
-                  a(href='/user/'+val.actor.username)
+              .actorDropdown(style='display: none;')
+                .actor.ui.selection.dropdown
+                  input(type='hidden', name='user')
+                  i.dropdown.icon
+                  .default.text
+                    a(href='/user/'+val.actor.username)
+                    img.ui.avatar.image.lazyload(data-src=cdn+"/profile_pictures/"+val.actor.profile.picture)
+                    span=val.actor.profile.name
+                  .menu
+                    each person in script
+                      if person.actor
+                        .item(data-value='1')
+                            img.ui.avatar.image.lazyload(data-src=cdn+"/profile_pictures/"+person.actor.profile.picture)
+                            span=person.actor.profile.name
+              .normalActorIcon
+                a(href='/user/'+val.actor.username)
                   img.ui.avatar.image.lazyload(data-src=cdn+"/profile_pictures/"+val.actor.profile.picture)
                   span=val.actor.profile.name
-                .menu
-                  each person in script
-                    .item(data-value='1')
-                        img.ui.avatar.image.lazyload(data-src=cdn+"/profile_pictures/"+person.actor.profile.picture)
-                        span=person.actor.profile.name
             else
               a(href='/user/'+val.actor.username)
                 img.ui.avatar.image.lazyload(data-src=cdn+"/profile_pictures/"+val.actor.profile.picture)
@@ -186,6 +203,26 @@ block content
                   a(href='/user/NoahM1121')
                     img.ui.avatar.image(src='/profile_pictures/image-7.png')
                     span='Another User'
+          if user.isAdmin
+            .content.varDropdowns(style='display: none;')
+              .var.ui.selection.dropdown.expGroup
+                input(type='hidden', name='expGroup')
+                i.dropdown.icon
+                .default.text
+                  span=val.experiment_group
+                .menu
+                  each x in study.experiment_groups
+                    .item(data-value=x.var)
+                      span=x.var
+              .var.ui.selection.dropdown.class
+                input(type='hidden', name='class')
+                i.dropdown.icon
+                .default.text
+                  span=val.class
+                .menu
+                  each x in study.classes
+                    .item(data-value=x.var)
+                      span=x.var
           //-div(style="position: relative; z-index: 1;")
             img(src="image.png" style="position: absolute; z-index: 2;")
             span#overlay_text(style="position: relative; top: -10px; z-index: 3;") OVERLAY
@@ -239,6 +276,7 @@ block content
                               i.heart.icon
                               span.num=0
                               |  Likes
+                          .hiddendate(hidden='true')= (user.createdAt.getTime() + comment.time)
                           .text=comment.body
                           .actions
                             a.like.comment Like
@@ -247,7 +285,7 @@ block content
                     else
                       .comment(commentID=comment.id)
                         a.avatar(href='/user/'+comment.actor.username)
-                          //-img(src=cdn+'/profile_pictures/'+comment.actor.profile.picture)                       
+                          //-img(src=cdn+'/profile_pictures/'+comment.actor.profile.picture)
                           img.lazyload(data-src=cdn+"/profile_pictures/"+comment.actor.profile.picture)
                         .content
                           a.author(href='/user/'+comment.actor.username)=comment.actor.profile.name
@@ -257,12 +295,13 @@ block content
                               if comment.liked
                                 i.red.heart.icon
                                 span=comment.likes
-                                |  Likes 
+                                |  Likes
                               else
                                 i.heart.icon
                                 span.num=comment.likes
                                 |  Likes
-                          .text=comment.body
+                          .hiddendate(hidden='true')= (user.createdAt.getTime() + comment.time)
+                          .text.commentText=comment.body
                           .actions
                             if comment.liked
                               a.red.like.comment Like
@@ -275,9 +314,13 @@ block content
                 if user.profile.picture
                   img.ui.avatar.image(src='/user_post/'+user.profile.picture, name=user.profile.name || user.username || user.id)
                 else
-                  img.ui.avatar.image(src=user.gravatar(60), name=user.profile.name || user.username || user.id)            
+                  img.ui.avatar.image(src=user.gravatar(60), name=user.profile.name || user.username || user.id)
               input.newcomment(type='text', placeholder='Write a Comment')
               i.big.send.link.icon
+          //-.extra.content(tabindex='0', style='display: none;')
+          .ui.red.bottom.attached.adminDelete.icon.button(tabindex='0', style='display: none;')
+            i.trash.alternate.outline.icon
+            | Delete Post
 
     .ui.fluid.card
       .content
@@ -337,6 +380,65 @@ block content
       .actions
         input.ui.green.button(type='submit', name="foo", value='Submit', form='postform')
 
+    .ui.tiny.adminpost.modal()
+      i.close.icon
+      .header Create a New Actor Post
+      .content
+        form#adminpostform.ui.adminfeed.form(action='/adminpost/new', method='POST', enctype='multipart/form-data')
+          input(type='hidden', name='_csrf', value=_csrf)
+          .field
+            .actor.ui.selection.dropdown
+              input(type='hidden', name='user')
+              i.dropdown.icon
+              .default.text
+                span='Pick an actor'
+              .menu
+                each person in script
+                  if person.actor
+                    .item(data-value=person.actor.profile.name)
+                        img.ui.avatar.image.lazyload(data-src=cdn+"/profile_pictures/"+person.actor.profile.picture)
+                        span=person.actor.profile.name
+          .description How many days:hours:mins ago was the post made?
+          .field
+            textarea(rows='1', placeholder='0:0:0', name='time', pattern='[0-99]:[0-99]:[0-99]')
+          .description Create a caption
+          .field
+            textarea(rows='2', placeholder='Share your meal', name='caption')
+          .description How many likes on the post?
+          .field
+            textarea(rows='1', placeholder='0', name='likes')
+          .description What's the experiment group?
+          .field
+            .var.ui.selection.dropdown
+              input(type='hidden', name='expGroup')
+              i.dropdown.icon
+              .default.text
+                span='Pick an experiment group'
+              .menu
+                each val in study.experiment_groups
+                  .item(data-value=val.var)
+                    span=val.var+': '+val.description
+          .description What's the class?
+          .field
+            .var.ui.selection.dropdown
+              input(type='hidden', name='class')
+              i.dropdown.icon
+              .default.text
+                span='Pick a class'
+              .menu
+                each val in study.classes
+                  .item(data-value=val.var)
+                    span=val.var+': '+val.description
+          .field.image-upload
+            label(for='adminpicinput')
+              .image.content
+                img#imgInpAdminPost.ui.fluid.image(src='/public/photo-camera.svg')
+            //-input#picinput(type='file', accept='image/*', capture='camera', name='picinput')
+            input#adminpicinput(type='file', accept='image/*', name='adminpicinput')
+          .ui.error.message
+      .actions
+        input.ui.green.button(type='submit', name="foo", value='Submit', form='adminpostform')
+
     .ui.tiny.update.modal()
       i.close.icon
       .header Change Post Photo
@@ -352,3 +454,12 @@ block content
           .ui.error.message
       .actions
         input.ui.green.button(type='submit', name="new", value='Submit', form='updateform')
+
+    .ui.tiny.deletePost.modal()
+      i.close.icon
+      .header Delete post?
+      .content
+        .description This action cannot be undone. Are you sure you want to delete this post?
+      .actions
+        input.ui.blue.cancelDelete.button(type='submit', value='Cancel')
+        input.ui.confirmDelete.button(type='submit', value='Delete Post')
