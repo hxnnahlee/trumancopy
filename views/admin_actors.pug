@@ -1,0 +1,86 @@
+extends ui_layout_no
+
+block content
+
+  //-Change this URI to a CDN you are using for Photos
+  -var cdn = "";
+
+  #loading.eight.wide.computer.ten.wide.tablet.sixteen.wide.mobile.column
+    img.ui.centered.small.image(src='/public/heart.svg')
+  #content.eight.wide.computer.ten.wide.tablet.sixteen.wide.mobile.column(style='display: none;')
+    .ui.fluid.card
+      .content
+        .ui.newactorbutton.green.button.fluid
+          i.plus.icon
+          |  Create New Actor
+
+    for actor in actors
+      .ui.fluid.card(actorUsername=actor.username)
+        .img
+          img.lazyload.image(data-src=cdn+"/profile_pictures/"+actor.profile.picture, style="max-width:100%;width:100%;")
+        .content
+          a.header(href='/user/'+actor.username)= '@'+actor.username
+          .meta=actor.profile.name
+          .description=actor.profile.bio
+          .description
+            i.marker.icon
+            span=actor.profile.location
+        .content
+          .description=actor.profile.age
+          .description=actor.class
+        .ui.red.bottom.attached.deleteActor.icon.button
+          i.trash.alternate.outline.icon
+          | Delete Actor
+  br
+  br
+  br
+  br
+  .ui.tiny.newactor.modal()
+    i.close.icon
+    .header Create a New Actor
+    .content
+      form#adminactorform.ui.adminactor.form(action='/actor/new', method='POST', enctype='multipart/form-data')
+        input(type='hidden', name='_csrf', value=_csrf)
+        .description What's the username?
+        .field
+          textarea(rows='1', placeholder='username', name='username')
+        .description What's the name?
+        .field
+          textarea(rows='1', placeholder='Name', name='profilename')
+        .description How old is the actor?
+        .field
+          textarea(rows='1', placeholder='0', name='age')
+        .description What class?
+        .field
+          .var.ui.selection.dropdown
+            input(type='hidden', name='class')
+            i.dropdown.icon
+            .default.text
+              span='Pick a class'
+            .menu
+              each val in study.actor_classes
+                .item(data-value=val)
+                  span=val
+        .description Location?
+        .field
+          textarea(rows='1', name='location')
+        .description Bio?
+        .field
+          textarea(rows='2', name='bio')
+        .field.image-upload
+          label(for='actorpicinput')
+            .image.content
+              img#imgInpActor.ui.fluid.image(src='/public/photo-camera.svg')
+          input#actorpicinput(type='file', accept='image/*', name='actorpicinput')
+        .ui.error.message
+    .actions
+      input.ui.green.button(type='submit', name="foo", value='Submit', form='adminactorform')
+
+  .ui.tiny.deleteActor.modal()
+    i.close.icon
+    .header Delete Actor?
+    .content
+      .description This action cannot be undone. Are you sure you want to delete this actor?
+    .actions
+      input.ui.blue.cancelActorDelete.button(type='submit', value='Cancel')
+      input.ui.confirmActorDelete.button(type='submit', value='Delete Actor')

@@ -50,6 +50,10 @@ $(window).on("load", function() {
     observeChanges : true
   });
 
+  $('.ui.tiny.newactor.modal').modal({
+    observeChanges : true
+  });
+
   //get add new feed post modal to work
   $("#newpost, a.item.newpost").click(function () {
     $(' .ui.tiny.post.modal').modal('show');
@@ -58,6 +62,12 @@ $(window).on("load", function() {
   //for admin new post modal
   $("#adminpost").click(function () {
     $('.ui.tiny.adminpost.modal').modal('show');
+  });
+
+  //for create new actor modal
+  $('.newactorbutton')
+  .on('click', function () {
+    $('.ui.tiny.newactor.modal').modal('show');
   });
 
   //new post validator (picture and text can not be empty)
@@ -228,6 +238,81 @@ $(window).on("load", function() {
           //return true;
           });
 
+  //new actor validator
+  $.fn.form.settings.rules.greaterEqualNum = function(value, e) {
+    return (value >= e);
+  };
+
+  $('.ui.adminactor.form')
+  .form({
+    on: 'blur',
+    fields: {
+      username: {
+        identifier  : 'username',
+        //NEED TO CHECK THAT THIS USERNAME HASNT BEEN TAKEN YET!!!!
+        rules: [
+          {
+            type   : 'empty',
+            prompt : 'Please enter a username'
+          }
+        ]
+      },
+      profilename: {
+        identifier  : 'profilename',
+        rules: [
+          {
+            type   : 'empty',
+            prompt : 'Please add a profile name'
+          }
+        ]
+      },
+      age: {
+        identifier  : 'age',
+        rules: [
+          {
+            type: 'integer',
+            prompt : 'Age should be an integer'
+          },
+          {
+            type: 'greaterEqualNum[13]',
+            prompt: 'Age should be >= 13'
+          }
+        ]
+      },
+      class: {
+        identifier  : 'class',
+        rules: [
+          {
+            type   : 'empty',
+            prompt : 'Please choose a class'
+          }
+        ]
+      },
+      actorpicinput: {
+        identifier  : 'actorpicinput',
+        rules: [
+          {
+            type: 'notExactly[/public/photo-camera.svg]',
+            prompt : 'Please click on Camera Icon to add a photo'
+          }
+        ]
+      }
+    },
+
+    onSuccess:function(event, fields){
+      console.log("Event is :");
+      //console.log(event);
+      console.log("fields is :");
+      //console.log(fields);
+      $(".ui.adminactor.form")[0].submit();
+    }
+
+  });
+
+  $('.ui.adminactor.form').submit(function(e) {
+        e.preventDefault();
+        console.log("Submit the actor junks!!!!")
+  });
 
 //Picture Preview on Image Selection
 function readURL(input) {
@@ -269,6 +354,19 @@ function readURL(input) {
     }
   }
 
+  //Picture Preview on Image Selection for actor profile
+  function readURLAdminActor(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            $('#imgInpActor').attr('src', e.target.result);
+            console.log("FILE is "+ e.target.result);
+        }
+
+        reader.readAsDataURL(input.files[0]);
+    }
+  }
+
   $("#picinput").change(function(){
       console.log("@@@@@ changing a photo");
       readURL(this);
@@ -282,6 +380,11 @@ function readURL(input) {
   $("#adminpicinput").change(function(){
     console.log("adding photo ..");
     readURLAdminPost(this);
+  });
+
+  $("#actorpicinput").change(function(){
+    console.log("adding actor profile photo ..");
+    readURLAdminActor(this);
   });
 
 $(".actor.ui.selection.dropdown").dropdown();
@@ -386,11 +489,33 @@ $('.right.floated.admintime.meta, .admindate').each(function() {
     });
   });
 
-  //admin cancel delete on confirmation modal
+  //admin cancel post delete on confirmation modal
   $('input.ui.blue.cancelDelete.button')
   .on('click', function() {
     console.log('canceled delete');
     $('.ui.tiny.deletePost.modal').modal('hide');
+  })
+
+  //admin delete actor button
+  $('.ui.deleteActor.button')
+  .on('click', function() {
+    $('.ui.tiny.deleteActor.modal').modal('show');
+    var card = $(this).parents( ".ui.fluid.card" );
+    var username = card.attr( "actorUsername" );
+    //if they confirm the delete
+    $('input.ui.confirmActorDelete.button')
+    .on('click', function() {
+      $('.ui.tiny.deleteActor.modal').modal('hide');
+      $.post( '/actor_delete', { username: username, _csrf : $('meta[name="csrf-token"]').attr('content') }, function(response){
+        document.location.reload(true);
+      });
+    });
+  });
+
+  //admin cancel actor delete on confirmation modal
+  $('input.ui.blue.cancelActorDelete.button')
+  .on('click', function() {
+    $('.ui.tiny.deleteActor.modal').modal('hide');
   })
 
   // This will save the changes on the card that 'save' is clicked on

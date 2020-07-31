@@ -3,7 +3,72 @@ const User = require('../models/User');
 const Notification = require('../models/Notification');
 const _ = require('lodash');
 const Actor = require('../models/Actor.js');
+const study = require('../study.json');
 
+
+exports.getActors = (req, res, next) => {
+  Actor.find()
+    .sort('username')
+    .exec(function (err, actors) {
+      if (err) {
+        return next(err);
+      }
+      res.render('admin_actors', {actors: actors, study: study});
+    });
+};
+
+exports.newActor = (req, res, next) => {
+  console.log("###########NEW ACTOR###########");
+  console.log("Username is "+req.body.username);
+
+  //Make sure the file exists
+  if (req.file)
+  {
+    const actor = new Actor({
+      class: req.body.class,
+      username: req.body.username,
+      profile: {
+        name: req.body.profilename,
+        //gender: String,
+        age: req.body.age,
+        location: req.body.location,
+        bio: req.body.bio,
+        //fakepic: String,
+        picture: req.file.filename
+      }
+    });
+
+    actor.save((err) => {
+      if (err) {
+        return next(err);
+      }
+      req.flash('success', { msg: 'Actor has been added.'});
+      res.redirect('/actors');
+    });
+  }
+
+  else
+  {
+    console.log("@#@#@#@#@#@#@#ERROR: Oh Snap, Made a admin post but there is no file!")
+    req.flash('errors', { msg: 'ERROR: There is no post file.' });
+    res.redirect('/');
+  }
+};
+
+exports.deleteActor = (req, res, next) => {
+  Actor.findOne({ 'username': req.body.username}, (err, actor) => {
+    console.log("TRYING TO DELETE ACTOR: @"+req.body.username);
+    //if actor doesn't exist
+    if (err) {return next(err); }
+
+    actor.delete((err) => {
+      if (err) {
+        return next(err);
+      }
+      res.send({result:"success"});
+    });
+  });
+};
 
 /**
  * POST /update_post_admin/

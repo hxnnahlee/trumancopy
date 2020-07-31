@@ -39,8 +39,23 @@ This project and software development was supported by the National Science Foun
 Also special thanks to Sahat Yalkabov and his [Hackathon Starter](https://github.com/sahat/hackathon-starter) project, which provided the basic organization for this project.
 
 
+## Summer 2020 Progress
 
-Changes made 7/1/2020
+Admin Features Added
+=======================
+Time editing: time can now be editing, when in editing mode displays in the form days:hours:minutes
+
+Creating new post: Admins can create new actor posts directly through the site, similar to how users can upload their own posts
+
+Deleting posts: Admins can delete actor posts, must confirm deletion before post will be deleted
+
+Accessing classes: study.json contains study info, including classes and experiment groups of posts and actors, this file should be used to store study variables rather than hard coding them, also has variable descriptions
+
+Actor page: new page at '/actors' that lists all actors in study, currently can create new actors and delete actors using this page
+
+More details on these features are given in the final report. Location of code changes described below.
+
+Changes made 7/1/2020 (time editing)
 =======================
 
 In admin.js:
@@ -58,34 +73,58 @@ In script.pug:
 - added hidden attribute hiddendate on line 267 to pass on the comment time value
 
 
-Changes made 7/22 (in order of file and location in code)
+Changes made 7/22 (creating posts, deleting posts, accessing classes)
 =======================
 In app.js:
--include study.json
--create multer object for admin creation of new actor post
--included new admin post path in list of paths that nust wait for csrf to be checked
--attach study.json to app object
--created new post routes for admin creating and deleting posts
+- include study.json
+- create multer object for admin creation of new actor post
+- included new admin post path in list of paths that nust wait for csrf to be checked
+- attach study.json to app object
+- created new post routes for admin creating and deleting posts
 
 In controllers/admin.js:
--included experiment group and class in findOneAndUpdate
--created exports.newPostAdmin to save new posts to the database
--created exports.deletePostAdmin to remove posts from the database
+- included experiment group and class in findOneAndUpdate
+- created exports.newPostAdmin to save new posts to the database
+- created exports.deletePostAdmin to remove posts from the database
 
 In controllers/script.js:
--include study.json when rendering the script so exp and class variables can be accessed
+- include study.json when rendering the script so exp and class variables can be accessed
 
 In main.js:
--created a new modal "adminpost" that appears on when clicked and has a form validator and submits
--picture functions for admin post, nearly identical to normal picture functions
--in admin mode toggle, hide/show the delete button, actor/exp group/class dropdown menus
+- created a new modal "adminpost" that appears on when clicked and has a form validator and submits
+- picture functions for admin post, nearly identical to normal picture functions
+- in admin mode toggle, hide/show the delete button, actor/exp group/class dropdown menus
 
 In script.pug:
--input button for new admin post
--changed the actor icons on post, dropdown has display:  none, normal display is default
--exp group and class drop down menus, start as display: none
--added extra label to the comment text so the text in the dropdowns doesn't also become editable in admin mode
--admin create post modal
--admin delete post modal
+- input button for new admin post
+- changed the actor icons on post, dropdown has display:  none, normal display is default
+- exp group and class drop down menus, start as display: none
+- added extra label to the comment text so the text in the dropdowns doesn't also become editable in admin mode
+- admin create post modal
+- admin delete post modal
 
 Made new file study.json that has study info
+
+Changes made 7/31: (actor page)
+=======================
+In app.js:
+- multer object for actor profile pictures
+- created a new route for adding and deleting actors
+
+In admin controller:
+- included study.json
+- getActors which gets all actors in the study and renders the actors page
+- newActor creates a new actor object and saves it to the database
+- deleteActor finds an actor by usernames and removes them from the database
+
+In main.js:
+- added functions for create new actor modal
+- added functions for delete actor buttons and modal
+
+In study.json:
+- added actor classes
+
+Created admin_actors.pug, which displays all the actors in the study similar to how posts are displayed in the feed. Currently, actors can be created and deleted using this page
+
+In script.pug:
+- wording changes on comfirm delete modal

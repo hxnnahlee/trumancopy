@@ -32,7 +32,7 @@ var m_options = multer.diskStorage({ destination : path.join(__dirname, 'uploads
   }
 });
 
-var userpost_options = multer.diskStorage({ destination : path.join(__dirname, 'post_pictures') ,
+var adminpost_options = multer.diskStorage({ destination : path.join(__dirname, 'post_pictures') ,
   filename: function (req, file, cb) {
     var lastsix = req.user.id.substr(req.user.id.length - 6);
     var prefix = lastsix + Math.random().toString(36).slice(2, 10);
@@ -40,11 +40,18 @@ var userpost_options = multer.diskStorage({ destination : path.join(__dirname, '
   }
 });
 
-var adminpost_options = multer.diskStorage({ destination : path.join(__dirname, 'uploads/user_post') ,
+var userpost_options = multer.diskStorage({ destination : path.join(__dirname, 'uploads/user_post') ,
   filename: function (req, file, cb) {
     var lastsix = req.body.user.id.substr(req.user.id.length - 6);
     var prefix = lastsix + Math.random().toString(36).slice(2, 10);
     cb(null, prefix + file.originalname.replace(/[^A-Z0-9]+/ig, "_"));
+  }
+});
+
+var actorprofile_options = multer.diskStorage({ destination : path.join(__dirname, 'profile_pictures') ,
+  filename: function (req, file, cb) {
+    var prefix = req.body.username
+    cb(null, prefix + file.originalname.replace(/[^A-Z0-9]+/ig, "."));
   }
 });
 
@@ -58,7 +65,8 @@ var useravatar_options = multer.diskStorage({ destination : path.join(__dirname,
 //const upload = multer({ dest: path.join(__dirname, 'uploads') });
 const upload= multer({ storage: m_options });
 const userpostupload= multer({ storage: userpost_options });
-const adminpostupload= multer({ storage: userpost_options });
+const adminpostupload= multer({ storage: adminpost_options });
+const actorprofileupload= multer({ storage: actorprofile_options });
 const useravatarupload= multer({ storage: useravatar_options });
 
 
@@ -199,7 +207,7 @@ app.use(flash());
 
 
 app.use((req, res, next) => {
-  if ((req.path === '/api/upload') || (req.path === '/post/new') || (req.path === '/adminpost/new') || (req.path === '/account/profile') || (req.path === '/account/signup_info_post')) {
+  if ((req.path === '/api/upload') || (req.path === '/post/new') || (req.path === '/actor/new') || (req.path === '/adminpost/new') || (req.path === '/account/profile') || (req.path === '/account/signup_info_post')) {
     console.log("Not checking CSRF - out path now");
     //console.log("@@@@@request is " + req);
     next();
@@ -353,6 +361,9 @@ app.post('/feed', passportConfig.isAuthenticated, scriptController.postUpdateFee
 app.post('/pro_feed', passportConfig.isAuthenticated, scriptController.postUpdateProFeedAction);
 app.post('/userPost_feed', passportConfig.isAuthenticated, scriptController.postUpdateUserPostFeedAction);
 
+app.get('/actors', passportConfig.isAuthenticated, adminController.getActors);
+app.post('/actor/new', actorprofileupload.single('actorpicinput'), check, csrf, adminController.newActor);
+app.post('/actor_delete', passportConfig.isAuthenticated, adminController.deleteActor);
 app.post('/adminpost/new', adminpostupload.single('adminpicinput'), check, csrf, adminController.newPostAdmin);
 app.post('/delete_post_admin', passportConfig.isAuthenticated, adminController.deletePostAdmin);
 app.post('/update_post_admin', passportConfig.isAuthenticated, adminController.updatePostAdmin);
